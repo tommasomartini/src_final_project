@@ -1,11 +1,6 @@
 secondary match
 13/15 LZ77 immagini
 
-comunque bene specificare che l’aumento della taglia del search buffer oltre una certa
-soglia non comporta necessariamente un sostanziale miglioramento del rate di compressione,
-in quanto saranno necessari pi`u bit per rappresentare gli offset e le lunghezze dei prefissi nelle
-tripl
-
 
 ’algoritmo LZ77 fa una assunzione implicita: i pattern ripetuti sono sufficientemente vicini,
 in particolare le loro occorrenze cadono all’interno del search buffer. Questa assunzione fa s`ı
@@ -26,3 +21,8 @@ look-ahead buffer di taglia 258 B: il primo `e molto pi`u grande rispetto al sec
 lungo, quindi permetta di ottenere una codifica pi`u compatta. Questi parametri influiscono
 inoltre sulla velocit`a d’esecuzione, dato che pi`u grandi sono i buffer, pi`u lungo `e il tempo
 richiesto per ricercare possibili prefissi
+
+comunque bene specificare che l’aumento della taglia del search buffer oltre una certa
+soglia non comporta necessariamente un sostanziale miglioramento del rate di compressione,
+in quanto saranno necessari pi`u bit per rappresentare gli offset e le lunghezze dei prefissi nelle
+tripl

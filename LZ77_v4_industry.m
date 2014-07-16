@@ -8,41 +8,31 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %   BUGS & "TO-FIX"'s
-%   - Fare un pattern matching a bisezione? Provo L, poi 1, poi L - 1, poi
-%   2 e cosi' via...
-%   + ottengo una riga di dizionario [0, 1, 111] al quarto posto con
-%   test_Hodor.txt
-%   + conl'esempio di Hodor non metto le r
-%   + gestione ultimo simbolo. Qui l'ho corretta, ma non nlle versioni 2 e
-%   3!
+%   - la compression_ratio rimane sempre uguale!
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 close all;
 clear all;
 clc;
 
-%% Initialization
-
-% Program parameters
-verbose_mode = false;
-
 %% Pick a file from the filesystem
-    file_name_input = './cantrbry/cp.html';
-    M = 256;  % alphabet cardinality
-    stored_file_ID = fopen(file_name_input);
-    theseq = fread(stored_file_ID, Inf, '*uint8');
-    theseq = theseq';
-    msg_length = length(theseq);
-    fclose(stored_file_ID);
+file_name_input = './cantrbry/alice29.txt';
+M = 256;  % alphabet cardinality
+stored_file_ID = fopen(file_name_input);
+theseq = fread(stored_file_ID, Inf, '*uint8');
+theseq = theseq';
+msg_length = length(theseq);
+fclose(stored_file_ID);
 
+ % lengths of the windows
 windows_span = 1000 : 1000 : 30000;
 performances = zeros(1, length(windows_span));
 
 for win = 1 : length(windows_span)
-    
-    % Algorithm parameters
+
     search_window_length = windows_span(win);
-    coding_window_length = windows_span(win);
+%     coding_window_length = windows_span(win);
+    coding_window_length = 1000;
     
     seq = theseq;
     
@@ -50,7 +40,7 @@ for win = 1 : length(windows_span)
     
     dict_index = 2; % index to span the dictionary
     
-    ditionary = [];
+    dictionary = [];
     dictionary(1, :) = [0, 0, double(seq(1))];  % first triple
     
     search_index = 1;   % first element of the search window
@@ -61,7 +51,6 @@ for win = 1 : length(windows_span)
     while ~end_of_file
         
         % Pattern matching
-        
         pattern = seq(coding_index : min(msg_length - 1, coding_index + coding_window_length - 1));
         m = length(pattern);
         
@@ -106,11 +95,6 @@ for win = 1 : length(windows_span)
         if coding_index > length(seq)
             end_of_file = true;
         end
-        
-%         if verbose_mode
-%             clc;
-%             fprintf('Dictionary generation progress: %d%%', round(coding_index * 100 / msg_length));
-%         end
     end
     
     %% Dictionary compression
@@ -119,9 +103,7 @@ for win = 1 : length(windows_span)
     offset_size = ceil(ceil(log2(search_window_length)) / 8);
     length_size = ceil(ceil(log2(search_window_length + coding_window_length)) / 8);
     symbol_size = ceil(ceil(log2(M)) / 8);
-    
-%     cod_file_ID = fopen(dictionary_output, 'w');
-    
+        
     cod_sequence = [];
     for dict_row = 1 : size(dictionary, 1)
         
@@ -138,152 +120,21 @@ for win = 1 : length(windows_span)
         symbol_bytes = symbol8(1 : symbol_size);
         
         cod_sequence = [cod_sequence, [offset_bytes, length_bytes, symbol_bytes]];
-        
-%         if verbose_mode
-%             clc;
-%             disp('Dictionary generation progress: 100%');
-%             fprintf('Compression data progress: %d%% \n', round(dict_row * 100 / size(dictionary, 1)));
-%         end
+
     end
-    
-%     fwrite(cod_file_ID, cod_sequence);
-%     fclose(cod_file_ID);
-    
-%     if verbose_mode
-%         disp('Coding complete!');
-%     end
-    
-%     %% Pick up an encoded file
-% %     coded_file_ID = fopen(dictionary_output);
-% %     coded_dictionary = fread(coded_file_ID, Inf, '*uint8');
-% %     coded_dictionary = coded_dictionary';
-%     coded_dictionary = cod_sequence;
-% %     fclose(coded_file_ID);
-%     
-%     decoded_dictionary = zeros(length(coded_dictionary) / (offset_size + length_size + symbol_size), 3);
-%     for dict_row = 1 : size(decoded_dictionary, 1)
-%         
-%         offset_bytes = coded_dictionary(1 : offset_size);
-%         coded_dictionary = coded_dictionary(offset_size + 1 : end);
-%         offset8_dec = [offset_bytes, zeros(1, 8 - offset_size)];
-%         offset64_dec = typecast(offset8_dec, 'uint64');
-%         offset_dec = double(offset64_dec);
-%         
-%         length_bytes = coded_dictionary(1 : length_size);
-%         coded_dictionary = coded_dictionary(length_size + 1 : end);
-%         length8_dec = [length_bytes, zeros(1, 8 - length_size)];
-%         length64_dec = typecast(length8_dec, 'uint64');
-%         length_dec = double(length64_dec);
-%         
-%         symbol_bytes = coded_dictionary(1 : symbol_size);
-%         coded_dictionary = coded_dictionary(symbol_size + 1 : end);
-%         symbol8_dec = [symbol_bytes, zeros(1, 8 - symbol_size)];
-%         symbol64_dec = typecast(symbol8_dec, 'uint64');
-%         symbol_dec = double(symbol64_dec);
-%         
-%         decoded_dictionary(dict_row, :) = [offset_dec, length_dec, symbol_dec];
-%         
-% %         if verbose_mode
-% %             clc;
-% %             disp('Dictionary generation progress: 100%');
-% %             disp('Compression data progress: 100%');
-% %             disp('Coding complete!');
-% %             fprintf('Expanding dictionary progress: %d%%', round(dict_row * 100 / size(decoded_dictionary, 1)));
-% %         end
-%     end
-%     
-%     %% Check whether the dictionaries are equal
-%     if ~isequal(dictionary, decoded_dictionary)
-%         disp('Error! Dictionaries not equal!');
-%     end
-%     
-%     %% Decoder
-%     dict_length = size(decoded_dictionary, 1);
-%     
-%     decoded_sequence = -1;
-%     decoded_seq_index = 1;  % first EMPTY position
-%     
-%     for dictionary_row_index = 1 : dict_length
-%         
-%         dictionary_row = decoded_dictionary(dictionary_row_index, :);
-%         
-%         offset = dictionary_row(1);
-%         prefix_length = dictionary_row(2);
-%         last_symbol = dictionary_row(3);
-%         
-%         prefix_from = decoded_seq_index - offset;
-%         
-%         for prefix_symbol = 1 : prefix_length
-%             decoded_sequence(decoded_seq_index) = decoded_sequence(prefix_from + prefix_symbol - 1);
-%             decoded_seq_index = decoded_seq_index + 1;
-%         end
-%         
-%         decoded_sequence(decoded_seq_index) = last_symbol;
-%         decoded_seq_index = decoded_seq_index + 1;
-%         
-% %         if verbose_mode
-% %             clc;
-% %             disp('Dictionary generation progress: 100%');
-% %             disp('Compression data progress: 100%');
-% %             disp('Coding complete!');
-% %             disp('Expanding dictionary progress: 100%');
-% %             fprintf('Decoding data progress: %d%%', round(dictionary_row_index * 100 / dict_length));
-% %         end
-%     end
-%     
-%     decoded_sequence = uint8(decoded_sequence);
-%     
-% %     if verbose_mode
-% %         clc;
-% %         disp('Dictionary generation progress: 100%');
-% %         disp('Compression data progress: 100%');
-% %         disp('Coding complete!');
-% %         disp('Expanding dictionary progress: 100%');
-% %         disp('Decoding data progress: 100%');
-% %         disp('Decoding complete!');
-% %     end
-%     
-%     %% Store the decoded file
-%     dec_file_ID = fopen(file_name_output, 'w');
-%     fprintf(dec_file_ID, char(decoded_sequence));
-%     fclose(dec_file_ID);
-%     
-%     %% Error check
-%     
-%     if verbose_mode
-%         disp('Error check started...');
-%     end
-%     
-%     err_counter = 0;
-%     error_locations = [];
-%     for i = 1 : msg_length
-%         if seq(i) ~= decoded_sequence(i)
-%             err_counter = err_counter + 1;
-%             error_locations = [error_locations, i];
-%         end
-%     end
-%     
-%     if err_counter > 0
-%         fprintf('%d errors found! \n', err_counter);
-%     else
-%         disp('No errors found!');
-%     end
     
     %% Performances analysis
     byte_per_triplet = offset_size + length_size + symbol_size;
     comp_msg_size = byte_per_triplet * size(dictionary, 1);
     original_msg_size = msg_length;
     compression_ratio = round(comp_msg_size * 100 / original_msg_size);
-    if verbose_mode
-        fprintf('Compression: %d %%', compression_ratio);
-    end
     
     performances(win) = compression_ratio;
     
-    clc;
-    fprintf('Progress: %d %%', round(win * 100 / length(windows_span)));
-    windows_span(win)
-    compression_ratio
+%     clc;
+%     fprintf('Progress: %d %%', round(win * 100 / length(windows_span)));
+%     windows_span(win)
+%     compression_ratio
 end
 
 figure;

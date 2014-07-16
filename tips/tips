@@ -26,3 +26,5 @@ comunque bene specificare che l’aumento della taglia del search buffer oltre u
 soglia non comporta necessariamente un sostanziale miglioramento del rate di compressione,
 in quanto saranno necessari pi`u bit per rappresentare gli offset e le lunghezze dei prefissi nelle
 tripl
+
+mantenendo la coding window fissa a 1000 le prestazioni non cambiano

@@ -1,0 +1,14 @@
+\section{Introduction}
+This final project has the aim of developing a dictionary-based compression coding technique and comparing the gained performances with those of softwares present in a typical PC. In particular, we are required to develop our own version of the LZ77 and LZSS algorithms.
+
+In the following we will give a brief overview of such algorithms and we will explain how our versions have been implemented, focusing on the implementation choices. Eventually, we will provide a comparison between the two algorithms and their commercial versions, when they work to compress several kinds of file.
+
+The last section gathers all the further developments which would complete or improve the performances of our implementation.
+
+\subsection{Dictionary-based coding} \label{subsec:dict-base}
+A \textit{dictionary-based coding} is a coding technique which processes a file as a sequence of symbols to build a dictionary, that is a sequence of pairs (key, value), where the value can be either a symbol or a sequence itself. The dictionary, properly formatted, is the message to send to the receiver. The latter has to build back the original sequence exploiting the information contained in the dictionary entries. Actually, for the dictionaries we will be using, we do not care very much about the keys, since the entries are stacked with the same order the receiver will use at its side, therefore we will not talk about a key for a dictionary entry, rather than about a position.
+
+There are two kinds of dictionary-based coding technique, depending on the dictionary form. The first is the \textit{implicit dictionary coding}, which is the case of the LZ77 algorithm, in which the entries are generated and read sequentially, without the need of specifying a key for them. On the other hand, the \textit{explicit dictionary coding} creates some entries which are referred to with their keys and, in the decoding process, are used also non-sequentially. This is the case of the LZ78 algorithm, published by the same authors of the LZ77 one year later.
+
+
+

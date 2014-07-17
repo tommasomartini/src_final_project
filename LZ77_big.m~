@@ -2,12 +2,13 @@
 %   - LZ77 Algorithm -
 %   Tommaso Martini (108 15 80)
 
-%   'Big' version: this program is used to generate graphs
-%   search_window_length / compression
+%   v4.0 improvements:
+%   - pattern matching is executed in a pessimistic way, starting from the
+%   smallest match. This improves time performances.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %   BUGS & "TO-FIX"'s
-%   - ...
+%   - la compression_ratio rimane sempre uguale!
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 close all;
@@ -33,7 +34,7 @@ for file_num = file_numbers
     
     %% Pick a file from the filesystem
     
-    file_name_input = strcat('./big_files/', num2str(file_num));
+    file_name_input = strcat('./big_files/', num2str(file_num), '.txt');
     stored_file_ID = fopen(file_name_input);
     theseq = fread(stored_file_ID, Inf, '*uint8');
     theseq = theseq';
@@ -47,6 +48,7 @@ for file_num = file_numbers
     for win = 1 : length(windows_span)
         
         search_window_length = windows_span(win);
+        %     coding_window_length = windows_span(win);
         coding_window_length = 1000;
         
         seq = theseq;
@@ -145,10 +147,16 @@ for file_num = file_numbers
         compression_ratio = round(comp_msg_size * 100 / original_msg_size);
         
         performances(win) = compression_ratio;
+        
+        %     clc;
+        %     fprintf('Progress: %d %%', round(win * 100 / length(windows_span)));
+        %     windows_span(win)
+        %     compression_ratio
     end
-    
-    res_file_name = strcat('performances_results_big_', num2str(file_num));
-    save(res_file_name, 'windows_span', 'performances');
 end
 
+% figure;
+% stem(windows_span, performances);
+% xlabel('window size');
+% ylabel('Compression (%)');
 

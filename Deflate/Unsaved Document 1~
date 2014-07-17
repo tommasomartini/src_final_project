@@ -1,0 +1,19 @@
+Deflate (http://tools.ietf.org/html/rfc1951#page-6)
+
+LZ77 ha una seraching window di 32.000 bytes
+
+Un blocco di dati compressi corrisp[onde ad un blocco di input. Le dimensioni dei blocchi sono arbitrarie, ma blocchi NON comprimibili sono limitati a 65535 bytes.
+
+Ogni blocco e' compresso usando LZ77.
+
+Ho un Huffman tree per ogni blocco, indipendemente dagli altri (precedenti e successivi blocchi di input)
+
+Ogni blocco consiste di due parti: coppia di Huffman trees che descrivono una parte di dati compressi e LA parte di dati compressi. Gli stessi alberi di Huffman sono compressi usando Huffman.
+
+Dati compressi: serie di elementi di due tipi.
+1) literal bytes (cioe' i caratteri che sono codificati singolarmente e che non sono stati trovati nei 32Kbytes precedenti)
+2) puntatori a stringhe duplicate, formati in questo modo: <lunghezza del match, distanza backward>
+
+distanza massima 32Kbytes, lunghezza massima 258 bytes. Non ci sono limiti per la dimensione di un blocco, eccetto per i blocchi non comprimibili (<= 65535 bytes)
+
+

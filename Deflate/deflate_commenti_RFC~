@@ -1,0 +1,72 @@
+Deflate (http://tools.ietf.org/html/rfc1951#page-6)
+
+LZ77 ha una seraching window di 32.000 bytes
+
+Un blocco di dati compressi corrisp[onde ad un blocco di input. Le dimensioni dei blocchi sono arbitrarie, ma blocchi NON comprimibili sono limitati a 65535 bytes.
+
+Ogni blocco e' compresso usando LZ77.
+
+Ho un Huffman tree per ogni blocco, indipendemente dagli altri (precedenti e successivi blocchi di input)
+
+Ogni blocco consiste di due parti: coppia di Huffman trees che descrivono una parte di dati compressi e LA parte di dati compressi. Gli stessi alberi di Huffman sono compressi usando Huffman.
+
+Dati compressi: serie di elementi di due tipi.
+1) literal bytes (cioe' i caratteri che sono codificati singolarmente e che non sono stati trovati nei 32Kbytes precedenti)
+2) puntatori a stringhe duplicate, formati in questo modo: <lunghezza del match, distanza backward>
+
+distanza massima 32Kbytes, lunghezza massima 258 bytes. Non ci sono limiti per la dimensione di un blocco, eccetto per i blocchi non comprimibili (<= 65535 bytes)
+
+Ogni tipo di valore (literals, lunghesse e distanze) e' rappresentato con Huffman nella parte dei dati compressa.
+
+Uso un Huffman tree per literals e lunghezze e un'altro per le distanze.
+
+I code trees per ogni blocco appaiono in forma compressa PRIMA i dati compressi di ogni blocco.
+
+Bytes: most significant bit a sinistra
+
+Se uso piu' byte il most significant byte e' quello a destra! 520 si scrive:
+1000001000 -> 0000 0010 - 0000 1000
+Lo rappresento come
+0000 1000 - 0000 0010
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+3.1.1. Packing into bytes
+
+         This document does not address the issue of the order in which
+         bits of a byte are transmitted on a bit-sequential medium,
+         since the final data format described here is byte- rather than
+
+
+
+Deutsch                      Informational                      [Page 5]
+
+ 
+RFC 1951      DEFLATE Compressed Data Format Specification      May 1996
+
+
+         bit-oriented.  However, we describe the compressed block format
+         in below, as a sequence of data elements of various bit
+         lengths, not a sequence of bytes.  We must therefore specify
+         how to pack these data elements into bytes to form the final
+         compressed byte sequence:
+
+             * Data elements are packed into bytes in order of
+               increasing bit number within the byte, i.e., starting
+               with the least-significant bit of the byte.
+             * Data elements other than Huffman codes are packed
+               starting with the least-significant bit of the data
+               element.
+             * Huffman codes are packed starting with the most-
+               significant bit of the code.
+
+         In other words, if one were to print out the compressed data as
+         a sequence of bytes, starting with the first byte at the
+         *right* margin and proceeding to the *left*, with the most-
+         significant bit of each byte on the left as usual, one would be
+         able to parse the result from right to left, with fixed-width
+         elements in the correct MSB-to-LSB order and Huffman codes in
+         bit-reversed order (i.e., with the first bit of the code in the
+         relative LSB position).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+

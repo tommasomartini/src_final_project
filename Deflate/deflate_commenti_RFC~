@@ -70,3 +70,69 @@ RFC 1951      DEFLATE Compressed Data Format Specification      May 1996
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
+Huffman: dato un alfabeto con frequenze di simboli note, Huffman permette la costruzione di un codice ottimo. 
+
+I codici di Huffman usati per ogni alfabeto nel deflate devono avere due regole:
+1) i codici di una data lunghezza in bit devono avere ordine lessicografico (i simboli che rappresentano)
+2) parole di codice piu' corte precedono (lessicograficamente) parole di codice piu' lunghe.
+
+Se Huffman rispetta queste regole posso rappresentare il codice fornendo solo le lunghezze in bit di ogni parola di codice in ordine secondo l'alfabeto (lunghezza di A, lunghezza di B, lunghezza di C...). Ad esempio:
+A 10
+B 0
+C 110
+D 111
+lo codifico come (2, 1, 3, 3)
+
+L'algoritmo descritto genera i codici come interi, da leggersi dal piu' al meno significativo dei bit.
+
+bl_count[N] = numero di parole di codice di lunghezza N (N>=1)
+
+per ogni lunghezza di parola di codice trova il valore numerico minimo.
+
+assegna un valore numerico ad ogni parola di codice. Assegna valori cosecutivi a parole co la stess alunghezza in bit. Parole non utilizzate non devono avere un valore assegnatro.
+
+-- non ho capito il secondo punto dell'esempio
+
+
+
+Ogni blocco di dati compresso inizia con 3 bit di header, che contengono le seguenti info (i bit di header non iniziano necessariamente sul bordo di un byte: un blocco potrebbe non occupare un numero intero di byte!!):
+1) 1bit -> BFINAL (settato solo se questo e' l'ultimo blocco dell'insieme di dati)
+
+2) 2bit -> BTYPE (specifica come i dati sono compressi)
+00 no compression
+01 fixed Huffman codes
+10 dynamic Huffman codes
+11 riservato
+
+Decodign algorthm:
+leggi l'header del block
+se e' decodificato con dynaic Huffman:
+leggi la rappresentazione del dizionario
+leggi il liuteral/length value dallo stream.
+se value < 256 e' un literal
+se value = 256 end of block e termina
+se value > 256 (fino a 258) decodifica la distanza e decodifica secondo LZ77
+
+
+Potrei anche riferirmi ad una string ain un blocco precedente.
+
+NON COMPRESSED BLOCK	
+LEN: numero di byte di dati del blocco
+NLEN complemento a uno di LEN
+byte grezzi di dati
+
+BLOCCHI COMPRESSI
+BLocchi di dati codificati sono fatti di sequenze di simboli idealmente presi da tre alfabeti: literal bytes (valori 0...255), coppie <lunghezza, backward distanza> (lunghezza e; presa da 3...258 e la distanza 1...32,768). Alfabeti di literals e lunghezze sono fusi in un unico alfabeto (0...258): (0...255) sono literals, 256 e' end of block e (257...285) da' la lunghezza (extra bit per specificare meglio seguono il codice del simbolo).
+
+VEDI TABELLE
+
+
+
+COMPRESSIONE CON FIXED HUFFMAN CODES (btype 01)
+
+
+
+
+
+
+

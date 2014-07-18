@@ -38,5 +38,8 @@ A big problem with implicit dictionary based compression algorithms is that peri
 %\end{figure}
 %\end{center}
 
+It is easy to see that performances tends to improve with the growing of the \textit{searching window}. We could expect such a result: with shorter windows it is more difficult to find repeated pattern to refer to and, in some cases, we could neither realize that such patterns are present in the message. For a highly redundant input stream a long window allows to encode at the same time much more repetitions; even though the number of bits needed to represent a wide range of values grows with the increasing of the window, this happens with a logarithmic trend, while the amount of space used to encode a sequence byte per byte grows linearly. Clearly the usage of large windows implies a drop of performances from a computational time point of view. 
+In the best compression scenario, we would like to have a \textit{search window} as long as the message itself, but, since this is not suitable for time reason, commercial softwares usually work with block of symbols $32$ Kbyte long with windows of
+
 \subsection{\textit{Searching window} and \textit{coding window} variations}
-The \textit{LZ77} algorithm has, in fact, two parameters we can act to: the lengths of the \textit{searching window} and of the \textit{coding window}. It could be interesting wondering what happens if we stretch both the windows
+The \textit{LZ77} algorithm has, in fact, two parameters we can act to: the lengths of the \textit{searching window} and of the \textit{coding window}. It could be interesting wondering what happens if we stretch both the windows. From the following 2D graphs we can see that the length of the \textit{coding window} has, actually, a low impact on coding performances. The reason is that, for a redundant message, 

@@ -20,7 +20,17 @@ file_numbers = 1 : 7;
 
 for file_num = file_numbers
     
-    switch file_num
+    file_num
+    
+   switch file_num
+        case 1
+            max_win_span = 10000;
+        case 2
+            max_win_span = 13000;
+        case 3
+            max_win_span = 10000;
+        case 4
+            max_win_span = 13000;
         case 5
             max_win_span = 24000;
         case 6
@@ -28,7 +38,7 @@ for file_num = file_numbers
         case 7
             max_win_span = 38000;
         otherwise
-            max_win_span = 100000;
+            max_win_span = 20000;
     end
     
     %% Pick a file from the filesystem
@@ -41,8 +51,8 @@ for file_num = file_numbers
     fclose(stored_file_ID);
     
     % lengths of the windows
-    search_windows_span = 1000 : 5000 : max_win_span;
-    coding_windows_span = 1000 : 5000 : max_win_span;
+    search_windows_span = 1000 : 1000 : max_win_span;
+    coding_windows_span = 1000 : 1000 : max_win_span;
 %     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %     search_windows_span = 100 : 500 : 1000;
 %     coding_windows_span = 100 : 500 : 1000;

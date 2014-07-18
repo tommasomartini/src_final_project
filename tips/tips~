@@ -28,3 +28,6 @@ in quanto saranno necessari pi`u bit per rappresentare gli offset e le lunghezze
 tripl
 
 mantenendo la coding window fissa a 1000 le prestazioni non cambiano
+
+
+ricerca per bisezione, parola lunga o parola corta della coding window

@@ -2,8 +2,7 @@
 %   - LZ77 Algorithm -
 %   Tommaso Martini (108 15 80)
 
-%   'Big' version: this program is used to generate graphs
-%   search_window_length / compression
+%   'Big' version 2: speed up lucky cases
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %   BUGS & "TO-FIX"'s
@@ -16,7 +15,7 @@ clc;
 
 M = 256;  % alphabet cardinality
 
-file_numbers = 3 : 3;
+file_numbers = 1 : 3;
 
 for file_num = file_numbers
     
@@ -76,37 +75,32 @@ for file_num = file_numbers
                 dictionary(dict_index, :) = [0, 0, double(seq(end))];
                 dict_index = dict_index + 1;
             else
-                conti = true;
-                tmp_pattern = pattern(1);
+                match_length = length(pattern);
+                search_string = [seq(search_index : coding_index - 1), pattern(1 : end - 1)];   % the search_string is made by search_window and coding_window
+                match_positions = strfind(search_string, pattern);
                 
-                longest_match = 0;
-                match_position = coding_index;
-                
-                while conti
-                    search_string = [seq(search_index : coding_index - 1), tmp_pattern(1 : end - 1)];   % the search_string is made by search_window and coding_window
-                    match_positions = strfind(search_string, tmp_pattern);
-                    if ~isempty(match_positions)    % some matches found: search again
-                        longest_match = length(tmp_pattern);
-                        match_position = search_index + match_positions(1) - 1;
-                        if length(tmp_pattern) < length(pattern)
-                            tmp_pattern = pattern(1 : length(tmp_pattern) + 1);
-                        else    % I have used the whole pattern
-                            conti = false;
-                        end
-                    else    % no matches found: stop the cycle
-                        conti = false;
+                while isempty(match_positions)
+                    pattern = pattern(1 : end - 1);
+                    search_string = search_string(1 : end - 1);
+                    match_length = length(pattern);
+                    if isempty(pattern)    % there are no matches
+                        match_positions = coding_index; % in this way I know there have been no matches
+                    else
+                        match_positions = strfind(search_string, pattern);
                     end
                 end
                 
+                match_position = search_index + match_positions(1) - 1;
                 offset = coding_index - match_position;
                 
                 % New row in the dictionary
-                dictionary(dict_index, :) = [offset, longest_match, double(seq(coding_index + longest_match))];
+                dictionary(dict_index, :) = [offset, match_length, double(seq(coding_index + match_length))];
                 dict_index = dict_index + 1;
             end
             
             % Update indeces to scan the file
-            coding_index = coding_index + longest_match + 1;
+            % Update indeces to scan the file
+            coding_index = coding_index + match_length + 1;
             search_index = max(coding_index - search_window_length, 1); % you cannot start from the char before the first one
             
             if coding_index > length(seq)

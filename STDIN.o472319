@@ -1,0 +1,17 @@
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2014 The MathWorks, Inc.
+                    R2014a (8.3.0.532) 64-bit (glnxa64)
+                             February 11, 2014
+
+ 
+To get started, type one of these: helpwin, helpdesk, or demo.
+For product information, visit www.mathworks.com.
+ 
+[Warning: Executing startup failed in matlabrc.
+This indicates a potentially serious problem in your MATLAB setup, which should
+be resolved as soon as possible.  Error detected was:
+MATLAB:UndefinedFunction
+Undefined function or variable 'fshome'.] 
+[> In matlabrc at 192] 
+Progress: 3 %Progress: 7 %Progress: 10 %Progress: 13 %Progress: 17 %Progress: 20 %Progress: 23 %Progress: 27 %Progress: 30 %Progress: 33 %Progress: 37 %Progress: 40 %Progress: 43 %Progress: 47 %

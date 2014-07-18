@@ -140,7 +140,29 @@ I codici di Huffman dei due alfabeti appaiono nel blocco subito dopo i 3 bit di 
 
 Alfabeto per le lunghezze:
 0-15: lunghezze da 0-15
-16:
+16: copia la lunghezza della parola precedente per 3-6 volte (i successivi due bit indicano di quanto copiare)
+17: ripeti una lunghezza di codice di 0 per 3-10 volte (3 bit di lunghezza per indicarlo)
+18: ripeti una lunghezza di codice di zero per 11-138 volte (necessari 7 bit)
+
+
+Lunghezza di parola di zero significa chwe quella parola di codice non compare. Se uso solo una distanza di codice la codifico usando un bit.
+
+
+Formato dei blocchi:
+HLIT (5 bit): (numero di literal/length codes - 257) (rappresento i valori da 257 a 286)
+HDIST (5 bit): (numero di parole di codice per la distanza - 1) (rappresento i valori da 1 a 32)
+HCLEN (4 bit): (numero di parole di codice per la distanza - 4) (valori da 4 a 19)
+
+(HCLEN + 4) x 3 bit: lunghezze delle parole di codice per l'alfabeto di paroel di codice. Ordine strano: 16, 17, 18, 0, ...
+Le lunghezze dei codici sono interpretate come interi da 3 bit. Codice di lunghezza zero significa: parola non utilizzata.
+
+HLIT + 257: lunghezze delle parole per literal/length, codificato usando il code length Huffman code
+
+HDIST + 1: lunghezze delle parole per distance, codificato usando il code length Huffman code
+
+Actual compressed data of the block. COdificato usando la codifica di Huffman per literal/length e distanze.
+
+Ultimo simbolo 256 (fine del blocco) codificato con Huffman
 
 
 

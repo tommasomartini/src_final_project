@@ -1,0 +1,12 @@
+close all;
+clear all;
+clc;
+
+alphabet = 'abcdefghijklmnopqrstuvwxyz';
+
+sequence = 65 * ones(1, 10000);
+sequence = char(sequence);
+
+cod_file_ID = fopen('11', 'w');
+fwrite(cod_file_ID, sequence);
+fclose(cod_file_ID);

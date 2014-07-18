@@ -16,7 +16,7 @@ clc;
 
 M = 256;  % alphabet cardinality
 
-file_numbers = 3 : 3;
+file_numbers = 4 : 7;
 
 for file_num = file_numbers
     

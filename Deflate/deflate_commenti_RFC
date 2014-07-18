@@ -131,7 +131,16 @@ VEDI TABELLE
 COMPRESSIONE CON FIXED HUFFMAN CODES (btype 01)
 Codici di Huffman fissati e non specificati nei dati. 
 
+codici fissati. Le distanze 0-31 sono rappresentati con sequenze fisse di 5 bit. Posso usare gli eventuali extrta bit
 
+
+
+COMPRESSIONE CON FIXED HUFFMAN CODES (btype 10)
+I codici di Huffman dei due alfabeti appaiono nel blocco subito dopo i 3 bit di header e prima dei dati compressi. Prima i codici (literals/lunghezze) e poi i codici per le distanze. Scrivo ogni codice come una sequenza di distanze. Le sequenze dei codici sono a loro volta compresse con Huffman.
+
+Alfabeto per le lunghezze:
+0-15: lunghezze da 0-15
+16:
 
 
 

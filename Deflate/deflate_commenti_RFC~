@@ -129,8 +129,13 @@ VEDI TABELLE
 
 
 COMPRESSIONE CON FIXED HUFFMAN CODES (btype 01)
+Codici di Huffman fissati e non specificati nei dati. 
+
+codici fissati. Le distanze 0-31 sono rappresentati con sequenze fisse di 5 bit. Posso usare gli eventuali extrta bit
 
 
+
+COMPRESSIONE CON FIXED HUFFMAN CODES (btype 10)
 
 
 

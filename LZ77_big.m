@@ -16,9 +16,11 @@ clc;
 
 M = 256;  % alphabet cardinality
 
-file_numbers = 1 : 7;
+file_numbers = 6 : 7;
 
 for file_num = file_numbers
+    
+    file_num
     
     switch file_num
         case 5

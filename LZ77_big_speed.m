@@ -15,13 +15,21 @@ clc;
 
 M = 256;  % alphabet cardinality
 
-file_numbers = 1 : 3;
+file_numbers = 1 : 2;
 
 for file_num = file_numbers
     
     file_num
     
     switch file_num
+        case 1
+            max_win_span = 10000;
+        case 2
+            max_win_span = 13000;
+        case 3
+            max_win_span = 10000;
+        case 4
+            max_win_span = 13000;
         case 5
             max_win_span = 24000;
         case 6
@@ -29,7 +37,7 @@ for file_num = file_numbers
         case 7
             max_win_span = 38000;
         otherwise
-            max_win_span = 100000;
+            max_win_span = 20000;
     end
     
     %% Pick a file from the filesystem

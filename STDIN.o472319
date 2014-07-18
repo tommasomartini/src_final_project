@@ -14,4 +14,11 @@ be resolved as soon as possible.  Error detected was:
 MATLAB:UndefinedFunction
 Undefined function or variable 'fshome'.] 
 [> In matlabrc at 192] 
-Progress: 3 %Progress: 7 %Progress: 10 %Progress: 13 %Progress: 17 %Progress: 20 %Progress: 23 %Progress: 27 %Progress: 30 %Progress: 33 %Progress: 37 %Progress: 40 %Progress: 43 %Progress: 47 %
+Progress: 3 %Progress: 7 %Progress: 10 %Progress: 13 %Progress: 17 %Progress: 20 %Progress: 23 %Progress: 27 %Progress: 30 %Progress: 33 %Progress: 37 %Progress: 40 %Progress: 43 %Progress: 47 %Progress: 50 %Progress: 53 %Progress: 57 %Progress: 60 %Progress: 63 %Progress: 67 %Progress: 70 %Progress: 73 %Progress: 77 %Progress: 80 %Progress: 83 %Progress: 87 %Progress: 90 %Progress: 93 %Progress: 97 %Progress: 100 %>> [Warning: Objects of specgraph.stemseries class exist - not clearing this class
+or any of its superclasses] 
+[Warning: Objects of specgraph.baseline class exist - not clearing this class or
+any of its superclasses] 
+[Warning: Objects of graph2d.series class exist - not clearing this class or any
+of its superclasses] 
+[Warning: Objects of graphics.datacursorbehavior class exist - not clearing this
+class or any of its superclasses] 

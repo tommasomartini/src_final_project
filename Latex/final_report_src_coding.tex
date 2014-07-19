@@ -1,10 +1,5 @@
-%\documentclass[a4paper, 12pt, twoside, openright]{book}
 \documentclass[11pt, twocolumn]{article}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%  PACKETS  %%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\usepackage{changepage}	% pacchetto per impostare i margini della prima pagina
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{indentfirst}		% pacchetto per avere il rientro anche nella prima riga di una sezione
@@ -13,254 +8,33 @@
 \usepackage{amsmath}		% pacchetto per equazioni
 \usepackage{amsthm}		% pacchetto per i teoremi, da dichiarare DOPO amsmath!
 \usepackage{amssymb}		% pacchetto per insiemi matematici
-
 \usepackage[english]{babel}		% scelgo l'inglese come lingua
 \usepackage{verbatim}	% pacchetto per i commenti in blocco
-
-\usepackage{listings}	% pacchetto per scrivere codice sorgente
-\usepackage{color}		% pacchetto per definire nuovi colori
-\usepackage{caption}		% pacchetto per le intestazioni nel codice sorgente
-\usepackage{appendix}	% pacchetto per le appendici
-
-\usepackage{color}
-\definecolor{document_fontcolor}{rgb}{1, 1, 1}
-\color{document_fontcolor}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 \usepackage{graphicx}% pacchetto per le immagini
 \usepackage{subfigure}% pacchetto per le immagini raggruppate
-%\usepackage[a4paper, top=1.5cm, bottom=1.5cm, left=1.5cm, right=1.5cm]{geometry}
-\usepackage{fancyhdr}% Pacchetto per header persnalizzati
-\usepackage{lastpage}% pacchetto per determinare l'ultima pagina, per il footer
-\usepackage{extramarks}% Pacchetto per header e footer
-\usepackage{lipsum}% Pacchetto per generare un "Lorem Ipsum"
+\usepackage{fancyhdr}% Pacchetto per header personalizzati
 \usepackage{float}	% lo uso per mettere le immagini dove voglio con H
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\makeatletter
-\@ifundefined{date}{}{\date{}}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Margins
 \topmargin=-0.45in
 \evensidemargin=0in
 \oddsidemargin=0in
 \textwidth=6.5in
 \textheight=9.0in
 \headsep=0.25in 
-
 \linespread{1.1}	% spazio tra le linee
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%	VARIABILI
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\newcommand{\hmwkTitle}{Final Project} % Assignment title
-\newcommand{\hmwkDueDate}{Tuesday,\ 15-th July,\ 2014} % Due date
-\newcommand{\hmwkClass}{Source Coding} % Course/class
-\newcommand{\hmwkClassTime}{} % Class/lecture time
-\newcommand{\hmwkClassInstructor}{Prof. Giancarlo Calvagno} % Teacher/lecturer
-\newcommand{\hmwkAuthorName}{Tommaso Martini - 1081580} % Your name
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%	HEADER e FOOTER
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-%\lhead{\hmwkAuthorName} % Top left header
-%%\chead{\hmwkClass\ (\hmwkClassInstructor\ \hmwkClassTime): \hmwkTitle} % Top center header
-%\rhead{\firstxmark} % Top right header
-%\lfoot{\lastxmark} % Bottom left footer
-%\cfoot{} % Bottom center footer
-%\rfoot{Pagina\ \thepage\ di\ \pageref{LastPage}} % Bottom right footer
-%\renewcommand{\headrulewidth}{0.4pt} % Size of the header rule
-%\renewcommand{\footrulewidth}{0.4pt} % Size of the footer rule
-%
-%%\setlength\parindent{0pt} % Removes all indentation from paragraphs
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% grafica prima pagina
-
-\pagestyle{fancy}
-\usepackage{graphicx}	% pacchetto avanzato per la grafica
-\usepackage{wrapfig}		% pacchetto per circondare figure con testo
-\usepackage[usenames,dvipsnames,table]{xcolor} % pacchetto per colori
-\definecolor{333}{RGB}{51, 51, 51}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%\newtheorem{theorem}{Theorem}	% definisco l'ambiente per teoremi di amsthm
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%definisco la struttura per i pezzi di codice
-\definecolor{mygreen}{rgb}{0,0.6,0}
-\definecolor{mygray}{rgb}{0.5,0.5,0.5}
-\definecolor{mymauve}{rgb}{0.58,0,0.82}
-
-\lstset{ 
-  backgroundcolor=\color{white},   % choose the background color; you must add \usepackage{color} or \usepackage{xcolor}
-  %basicstyle=\footnotesize,        % the size of the fonts that are used for the code
-  basicstyle={\small\ttfamily},
-  breakatwhitespace=false,         % sets if automatic breaks should only happen at whitespace
-  breaklines=true,                 % sets automatic line breaking
- % captionpos=u,                    % sets the caption-position to bottom
-  commentstyle=\color{mygreen},    % comment style
-  deletekeywords={...},            % if you want to delete keywords from the given language
-  escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
-  extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
- % frame=single,                    % adds a frame around the code
-  frame=b,
-  keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
-  keywordstyle=\color{blue},       % keyword style
-  language=Matlab,                 % the language of the code
-  morekeywords={*,...},            % if you want to add more keywords to the set
-  numbers=none,                    % where to put the line-numbers; possible values are (none, left, right)
-  numbersep=5pt,                   % how far the line-numbers are from the code
-  numberstyle=\tiny\color{mygray}, % the style that is used for the line-numbers
-  rulecolor=\color{black},         % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
-  showspaces=false,                % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
-  showstringspaces=false,          % underline spaces within strings only
-  showtabs=false,                  % show tabs within strings adding particular underscores
-  stepnumber=1,                    % the step between two line-numbers. If it's 1, each line will be numbered
-  stringstyle=\color{mymauve},     % string literal style
-  tabsize=4,                       % sets default tabsize to 2 spaces
-  title=\lstname,                  % show the filename of files included with \lstinputlisting; also try caption instead of title
-  numberbychapter = false
-}
-\renewcommand{\lstlistingname}{Section}
-
-\DeclareCaptionFont{white}{\color{white}}
-\DeclareCaptionFormat{listing}{\colorbox{lightgray}{\parbox{\textwidth}{#1#2#3}}}
-\captionsetup[lstlisting]{format=listing, font={tt, color=white}, labelfont={bf, tt, color=white}}
-\renewcommand{\captionfont}{\small\ttfamily}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-%\fancypagestyle{plain}{		% definisco lo stile delle pagine (numerazione e titoli)
-%	\pagestyle{fancy}
-%	\fancyhead{}
-%	\fancyfoot{}
-%	\renewcommand{\headrulewidth}{0pt} 	% elimino la riga sotto l'intestazione
-%	\fancyhead[LE]{\leftmark}
-%	\fancyhead[RO]{\rightmark}
-%	\fancyfoot[LE, RO]{\thepage}
-%}
-%
-%\pagestyle{plain}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%	TITLE
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\title{
-\vspace{2in}
-\textmd{\textbf{\hmwkClass:\ \hmwkTitle}}\\
-\normalsize\vspace{0.1in}\small{Due to:\ \hmwkDueDate}\\
-\vspace{0.1in}\large{\textit{\hmwkClassInstructor\ \hmwkClassTime}}
-\vspace{3in}
-}
-
-\author{\textbf{\hmwkAuthorName}}
- % Insert date here if you want it to appear below your name
-
-%----------------------------------------------------------------------------------------
-
-\makeatother
+\newcommand{\hmwkAuthorName}{Tommaso Martini - 1081580}
+\lhead{LZ77 and LZSS Algorithms} % Top left header
+\rhead{\hmwkAuthorName} % Top right header
 
 \begin{document}
 
-%\maketitle
-
-%\frontmatter
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% First Page
-%
-%\begin{titlepage}
-%\begin{center}
-%\vbox to 0pt{\vbox to \textheight{\vfill 
-%\includegraphics[width=11.5cm]{loghi_unipd/unipd-light} 
-%\vfill}\vss}
-%
-%\hspace{0.5cm}	
-%\begin{adjustwidth}{-2cm}{-2cm}
-%\begin{minipage}{.20\textwidth}
-%  \includegraphics[height=2.5cm]{loghi_unipd/unipdRed}
-%\end{minipage}\begin{minipage}{.90\textwidth}
-%  \begin{table}[H]
-%  \begin{center}
-%  \begin{tabular}{c}
-%  \scshape{\Large{ \bfseries{Università degli Studi di Padova}}} \\
-%  \hline \\
-%  \scshape{\Large{Dipartimento di Ingegneria}} \\
-%  \scshape{\Large{dell'Informazione}}
-%  \end{tabular}
-%  \end{center}
-%  \end{table}
-%\end{minipage}\begin{minipage}{.20\textwidth}
-%  \includegraphics[height=2.0cm]{loghi_unipd/DEIeng}
-%  %\includegraphics[height=3.5cm]{DEI}
-%\end{minipage}
-%\end{adjustwidth} 
-%
-%\vspace{1cm}
-%\Large{Corso di Laurea Triennale in Ingegneria dell'Informazione} \\
-%\vspace{1.5cm}
-%\scshape{\LARGE{\bfseries{Reed-Solomon Codes}}} \\
-%\vspace{0.2cm} \linespread{1} \scshape{\large{\bfseries{(Codici di Reed-Solomon)}}}
-%\end{center}
-%
-%\vfill
-%\begin{normalsize}
-%\begin{flushleft}
-%  \hspace{60pt} \textit{Laureando} \hspace{160pt} \textit{Relatore}\\
-%  \vspace{5pt}
-%  \hspace{30pt} \large{\textbf{Tommaso Martini}} \hspace{70pt} \large{\textbf{Prof. Tomaso Erseghe}}\\
-%\end{flushleft}
-%\end{normalsize}
-%
-%\vfill
-%\begin{center}
-%25 luglio 2013
-%\hspace{-0.2cm}
-%\line(1, 0){360}
-%
-%\textsc{Anno Accademico 2012/2013}
-%\end{center}
-%%%\end{titlepage}
-%\twocolumn
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%DEDICA
-%\cleardoublepage % make left page blank
-%\null
-%\vspace{7cm}
-%\begin{flushright}
-%\textit{To my parents}
-%\end{flushright}
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%ABSTRACT
-%\newenvironment{abstract}{\cleardoublepage\thispagestyle{empty}\null\vfill\begin{center}
-%\bfseries\abstractname\end{center}}
-%{\vfill\null}
-       
-%\begin{abstract}
-%
-%This bachelor degree thesis has the purpose of presenting a general overview on \emph{Reed-Solomon codes} as a subclass of \emph{cyclic codes} and \emph{BCH codes}, using a mathematical approach to describe and prove their many practical aspects. After briefly exposing $Galois Fields$ theory, fundamental for the creation of error correcting codes, we will introduce a systematic encoding strategy through generator polynomial and a decoder based on \emph{Berlekamp-Massey} and \emph{Forney algorithms}. Every explanation will be followed by examples referring to a $RS(255, 223)$ code. Moreover a \textit{Matlab} implementation af a system \textit{encoder - channel - decoder} has been realised and the whole code can be found in this work. \\
-%\\
-%
-%\textit{Questa tesi di laurea triennale ha lo scopo di fornire una panoramica generale sui codici di Reed-Solomon come sottoclasse dei codici ciclici e dei codici BCH, utilizzando un approccio matematico per descrivere e dimostrare i loro numerosi aspetti vantaggiosi. Dopo aver brevemente esposto la teoria dei Campi di Galois, fondamentali per la costruzione di codici correttori d'errore, presenteremo una strategia di codifica sistematica tramite polinomio generatore e un decodificatore basato sugli algoritmi di Berlekamp-Massey e di Forney. Ogni spiegazione sarà seguita da esempi che fanno riferimento ad un codice $RS(255, 223)$. $\grave{E}$ stata, inoltre, realizzata un'implementazione in codice Matlab di un sistema codificatore - canale - decodificatore e l'intero codice può essere trovato all'interno di questo elaborato.}
-%\end{abstract}
-%
-%\tableofcontents
-
-%\mainmatter
-
-%\input{ch1}
-
-%\onecolumn
-%\twocolumn
+\title{{\Large Source Coding - Final Project} \\ \textsc{\LARGE \textbf{The LZ77 and LZSS Algorithms for Data Compression}}}
+\date{July 25, 2014}
+\author{Tommaso Martini (108 15 80)}
+        
+\maketitle
 
 \input{introduction.tex}
 
@@ -272,6 +46,7 @@
 
 \input{results.tex}
 
-\input{biblio.tex}
+\bibliographystyle{plain}
+\bibliography{src}
 
 \end{document}

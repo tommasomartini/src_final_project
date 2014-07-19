@@ -25,11 +25,11 @@ verbose_mode = false;
 
 % Algorithm parameters
 search_window_length = 10000;
-coding_window_length = 2000;
+coding_window_length = 10000;
 
 % Implementation parameters
 file_name_input = './cantrbry/alice29.txt';
-file_name_input = './big_files/5';
+file_name_input = './big_files/1';
 % file_name_input = 'sam.txt';
 dictionary_output = 'lzss_dictionary_output_2.txt';
 file_name_output = 'lzss_output_2.txt';
@@ -167,10 +167,6 @@ for dict_row = 1 : size(dictionary, 1)
         fprintf('Compression data progress: %d%% \n', round(dict_row * 100 / size(dictionary, 1)));
     end
 end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-bibit = bit_cod_sequence;
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 num_final_zeros = mod(length(bit_cod_sequence), 8);
 bit_cod_sequence = [bit_cod_sequence, zeros(1, 8 - num_final_zeros)];
@@ -355,7 +351,7 @@ end
 %% Performances analysis
 comp_msg_size = length(cod_sequence)
 original_msg_size = msg_length
-compression_ratio = round(comp_msg_size * 100 / original_msg_size);
+compression_ratio = comp_msg_size * 100 / original_msg_size
 if verbose_mode
     fprintf('Compression: %d %%', compression_ratio);
 end

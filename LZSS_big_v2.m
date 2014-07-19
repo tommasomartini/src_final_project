@@ -1,9 +1,8 @@
 %%  Source Coding - Final Project
-%   - LZ77 Algorithm -
+%   - LZSS Algorithm -
 %   Tommaso Martini (108 15 80)
 
-%   'Big' version: this program is used to generate graphs
-%   search_window_length / compression
+%   "Big" version: made to produce a great amount of data
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %   BUGS & "TO-FIX"'s
@@ -14,11 +13,11 @@ close all;
 clear all;
 clc;
 
-prefix_name = 'lz77_res_series2_';
+prefix_name = 'lzss_res_series2_';
 
 M = 256;  % alphabet cardinality
 
-file_numbers = 2 : 2;
+file_numbers = 3 : 7;
 
 for file_num = file_numbers
     
@@ -65,9 +64,16 @@ for file_num = file_numbers
         
         %% Encoder
         
-        dict_index = 2; % index to span the dictionary
+        % Expressed in bits
+        offset_size = ceil(log2(search_window_length - 1));
+        length_size = ceil(log2(coding_window_length - 1));
+        symbol_size = ceil(log2(M));
         
-        dictionary = [];
+        pair = offset_size + length_size + 1;   % number of bits to encode a pair
+        single = symbol_size + 1;   % number of bits to encode a single symbol
+        symbol_thr = ceil(pair / single);  % minimum number of symbol I can encode as a pair. If the match length is shorter than symbol_thr I encode them as single symbols
+        
+        dict_index = 2; % index to span the dictionary
         dictionary(1, :) = [0, 0, double(seq(1))];  % first triple
         
         search_index = 1;   % first element of the search window
@@ -78,7 +84,8 @@ for file_num = file_numbers
         while ~end_of_file
             
             % Pattern matching
-            pattern = seq(coding_index : min(msg_length - 1, coding_index + coding_window_length - 1));
+            
+            pattern = seq(coding_index : min(msg_length, coding_index + coding_window_length - 1));
             m = length(pattern);
             
             if m == 0   % last symbol of the sequence: encode it with a single symbol (so doing I'm not wasting resources)
@@ -110,13 +117,26 @@ for file_num = file_numbers
                 
                 offset = coding_index - match_position;
                 
-                % New row in the dictionary
-                dictionary(dict_index, :) = [offset, longest_match, double(seq(coding_index + longest_match))];
-                dict_index = dict_index + 1;
+                if offset == 0  % no matches: encode a symbol
+                    dictionary(dict_index, :) = [0, 0, double(seq(coding_index))];
+                    dict_index = dict_index + 1;
+                elseif longest_match < symbol_thr   % match, but it is convenient to encode symbols independently
+                    for i = 0 : longest_match - 1
+                        dictionary(dict_index, :) = [0, 0, double(seq(coding_index + i))];
+                        dict_index = dict_index + 1;
+                    end
+                else    % good match: encode a pair
+                    dictionary(dict_index, :) = [1, offset, longest_match];
+                    dict_index = dict_index + 1;
+                end
             end
             
             % Update indeces to scan the file
-            coding_index = coding_index + longest_match + 1;
+            if longest_match == 0   %no matches: go ahead of 1
+                coding_index = coding_index + 1;
+            else    % match: go ahead of longest_match
+                coding_index = coding_index + longest_match;
+            end
             search_index = max(coding_index - search_window_length, 1); % you cannot start from the char before the first one
             
             if coding_index > length(seq)
@@ -125,42 +145,60 @@ for file_num = file_numbers
         end
         
         %% Dictionary compression
-        
-        % How many bytes do I need to encode each parameter?
-        offset_size = ceil(ceil(log2(search_window_length)) / 8);
-        length_size = ceil(ceil(log2(search_window_length + coding_window_length)) / 8);
-        symbol_size = ceil(ceil(log2(M)) / 8);
-        
-        cod_sequence = [];
+                
+        bit_cod_sequence = [];
         for dict_row = 1 : size(dictionary, 1)
             
-            offset64 = uint64(dictionary(dict_row, 1));
-            offset8 = typecast(offset64, 'uint8');
-            offset_bytes = offset8(1 : offset_size);
+            if mod(dict_row - 1, 8) == 0    % every 8 dict rows I have to insert a byte with flags
+                indeces_octave = dictionary(dict_row : min(dict_row + 8 - 1, size(dictionary, 1)), 1);
+                indeces_octave = indeces_octave';
+                if size(dictionary, 1) - dict_row + 1 < 8   % if I'm left with less than 8 rows...
+                    indeces_octave = [indeces_octave, zeros(1, 8 - (size(dictionary, 1) - dict_row + 1))]; % put zeros as last flags
+                end
+                bit_cod_sequence = [bit_cod_sequence, indeces_octave];
+            end
             
-            length64 = uint64(dictionary(dict_row, 2));
-            length8 = typecast(length64, 'uint8');
-            length_bytes = length8(1 : length_size);
-            
-            symbol64 = uint64(dictionary(dict_row, 3));
-            symbol8 = typecast(symbol64, 'uint8');
-            symbol_bytes = symbol8(1 : symbol_size);
-            
-            cod_sequence = [cod_sequence, [offset_bytes, length_bytes, symbol_bytes]];
-            
+            if dictionary(dict_row, 1) == 0     % encode a symbol
+                curr_sym = dictionary(dict_row, 3);
+                curr_sym_bit = de2bi(curr_sym);
+                curr_sym_bit = [curr_sym_bit, zeros(1, symbol_size - length(curr_sym_bit))];
+                bit_cod_sequence = [bit_cod_sequence, curr_sym_bit];
+            else    % encode a pair
+                curr_off = dictionary(dict_row, 2);
+                curr_off_bit = de2bi(curr_off);
+                curr_off_bit = [curr_off_bit, zeros(1, offset_size - length(curr_off_bit))];
+                
+                curr_len = dictionary(dict_row, 3);
+                curr_len_bit = de2bi(curr_len);
+                curr_len_bit = [curr_len_bit, zeros(1, length_size - length(curr_len_bit))];
+                bit_cod_sequence = [bit_cod_sequence, curr_off_bit, curr_len_bit];
+            end
         end
         
+        num_final_zeros = mod(length(bit_cod_sequence), 8);
+        bit_cod_sequence = [bit_cod_sequence, zeros(1, 8 - num_final_zeros)];
+        cod_sequence = [];
+        while ~isempty(bit_cod_sequence)
+            piece = bit_cod_sequence(1 : 8);
+            bit_cod_sequence = bit_cod_sequence(9 : end);
+            curr_byte = bi2de(piece);
+            cod_sequence = [cod_sequence, curr_byte];
+        end
+        
+        % Embedding information about the size in bits of offset and length: 3
+        % bytes
+        symbol_size_byte = uint8(symbol_size);
+        offset_size_byte = uint8(offset_size);
+        length_size_byte = uint8(length_size);
+        cod_sequence = [symbol_size_byte, offset_size_byte, length_size_byte, cod_sequence];
+        
         %% Performances analysis
-        byte_per_triplet = offset_size + length_size + symbol_size;
-        comp_msg_size = byte_per_triplet * size(dictionary, 1);
+        comp_msg_size = length(cod_sequence);
         original_msg_size = msg_length;
         compression_ratio = comp_msg_size * 100 / original_msg_size;
-        
         performances(win) = compression_ratio;
     end
     
     res_file_name = strcat(prefix_name, num2str(file_num));
     save(res_file_name, 'windows_span', 'performances');
 end
-
-

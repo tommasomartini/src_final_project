@@ -24,17 +24,19 @@ clc;
 %% Initialization
 
 % Program parameters
-verbose_mode = true;
+verbose_mode = false;
 
 % Algorithm parameters
-search_window_length = 2000;
+search_window_length = 10000;
 coding_window_length = 2000;
 
 % Implementation parameters
 file_name_input = './cantrbry/cp.html';
+file_name_input = './big_files/2';
+file_name_input = 'sam_test.txt';
 % file_name_input = 'test_Hodor.txt';
-dictionary_output = 'dictionary_output.txt';
-file_name_output = 'sum_output.txt';
+dictionary_output = 'lz77_dictionary_output_2.txt';
+file_name_output = 'lz77_output_2.txt';
 M = 256;  % alphabet cardinality
 
 %% Pick a file from the filesystem

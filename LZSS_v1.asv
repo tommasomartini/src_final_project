@@ -17,16 +17,16 @@ clc;
 %% Initialization
 
 % Program parameters
-verbose_mode = false;
+verbose_mode = true;
 
 % Algorithm parameters
-search_window_length = 10000;
-coding_window_length = 2000;
+search_window_length = 500;
+coding_window_length = 1000;
 
 % Implementation parameters
 file_name_input = './cantrbry/alice29.txt';
-file_name_input = './big_files/2';
-file_name_input = 'sam_test.txt';
+file_name_input = '22';
+% file_name_input = 'test_Hodor.txt';
 dictionary_output = 'lzss_dictionary_output_2.txt';
 file_name_output = 'lzss_output_2.txt';
 M = 256;  % alphabet cardinality

@@ -1,8 +1,8 @@
 %%  Source Coding - Final Project
-%   - LZ77 Algorithm -
+%   - LZSS Algorithm -
 %   Tommaso Martini (108 15 80)
 
-%   'Big' version 2: speed up lucky cases
+%   "Big" version: made to produce a great amount of data
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %   BUGS & "TO-FIX"'s
@@ -13,11 +13,11 @@ close all;
 clear all;
 clc;
 
-prefix_name = 'lz77_res_series2_';
+prefix_name = 'lzss_res_series2_';
 
 M = 256;  % alphabet cardinality
 
-file_numbers = 1 : 2;
+file_numbers = 3 : 7;
 
 for file_num = file_numbers
     
@@ -77,7 +77,8 @@ for file_num = file_numbers
         while ~end_of_file
             
             % Pattern matching
-            pattern = seq(coding_index : min(msg_length - 1, coding_index + coding_window_length - 1));
+            
+            pattern = seq(coding_index : min(msg_length, coding_index + coding_window_length - 1));
             m = length(pattern);
             
             if m == 0   % last symbol of the sequence: encode it with a single symbol (so doing I'm not wasting resources)
@@ -85,32 +86,46 @@ for file_num = file_numbers
                 dictionary(dict_index, :) = [0, 0, double(seq(end))];
                 dict_index = dict_index + 1;
             else
-                match_length = length(pattern);
-                search_string = [seq(search_index : coding_index - 1), pattern(1 : end - 1)];   % the search_string is made by search_window and coding_window
-                match_positions = strfind(search_string, pattern);
+                conti = true;
+                tmp_pattern = pattern(1);
                 
-                while isempty(match_positions)
-                    pattern = pattern(1 : end - 1);
-                    search_string = search_string(1 : end - 1);
-                    match_length = length(pattern);
-                    if isempty(pattern)    % there are no matches
-                        match_positions = coding_index; % in this way I know there have been no matches
-                    else
-                        match_positions = strfind(search_string, pattern);
+                longest_match = 0;
+                match_position = coding_index;
+                
+                while conti
+                    search_string = [seq(search_index : coding_index - 1), tmp_pattern(1 : end - 1)];   % the search_string is made by search_window and coding_window
+                    match_positions = strfind(search_string, tmp_pattern);
+                    if ~isempty(match_positions)    % some matches found: search again
+                        longest_match = length(tmp_pattern);
+                        match_position = search_index + match_positions(1) - 1;
+                        if length(tmp_pattern) < length(pattern)
+                            tmp_pattern = pattern(1 : length(tmp_pattern) + 1);
+                        else    % I have used the whole pattern
+                            conti = false;
+                        end
+                    else    % no matches found: stop the cycle
+                        conti = false;
                     end
                 end
                 
-                match_position = search_index + match_positions(1) - 1;
                 offset = coding_index - match_position;
                 
+                if offset == 0  % no matches: encode a symbol
+                    dictionary(dict_index, :) = [0, 0, double(seq(coding_index))];
+                else    % match: encode a pair
+                    dictionary(dict_index, :) = [1, offset, longest_match];
+                end
+                
                 % New row in the dictionary
-                dictionary(dict_index, :) = [offset, match_length, double(seq(coding_index + match_length))];
                 dict_index = dict_index + 1;
             end
             
             % Update indeces to scan the file
-            % Update indeces to scan the file
-            coding_index = coding_index + match_length + 1;
+            if longest_match == 0   %no matches: go ahead of 1
+                coding_index = coding_index + 1;
+            else    % match: go ahead of longest_match
+                coding_index = coding_index + longest_match;
+            end
             search_index = max(coding_index - search_window_length, 1); % you cannot start from the char before the first one
             
             if coding_index > length(seq)
@@ -128,33 +143,41 @@ for file_num = file_numbers
         cod_sequence = [];
         for dict_row = 1 : size(dictionary, 1)
             
-            offset64 = uint64(dictionary(dict_row, 1));
-            offset8 = typecast(offset64, 'uint8');
-            offset_bytes = offset8(1 : offset_size);
+            if mod(dict_row - 1, 8) == 0
+                indeces_octave = dictionary(dict_row : min(dict_row + 8 - 1, size(dictionary, 1)), 1);
+                indeces_octave = indeces_octave';
+                if size(dictionary, 1) - dict_row + 1 < 8
+                    indeces_octave = [indeces_octave, zeros(1, 8 - (size(dictionary, 1) - dict_row + 1))];
+                end
+                indeces_byte = uint8(bi2de(indeces_octave));
+                cod_sequence = [cod_sequence, indeces_byte(1)];
+            end
             
-            length64 = uint64(dictionary(dict_row, 2));
-            length8 = typecast(length64, 'uint8');
-            length_bytes = length8(1 : length_size);
-            
-            symbol64 = uint64(dictionary(dict_row, 3));
-            symbol8 = typecast(symbol64, 'uint8');
-            symbol_bytes = symbol8(1 : symbol_size);
-            
-            cod_sequence = [cod_sequence, [offset_bytes, length_bytes, symbol_bytes]];
-            
+            if dictionary(dict_row, 1) == 0     % encode a symbol
+                symbol64 = uint64(dictionary(dict_row, 3));
+                symbol8 = typecast(symbol64, 'uint8');
+                symbol_bytes = symbol8(1 : symbol_size);
+                cod_sequence = [cod_sequence, symbol_bytes];
+            else    % encode a pair
+                offset64 = uint64(dictionary(dict_row, 2));
+                offset8 = typecast(offset64, 'uint8');
+                offset_bytes = offset8(1 : offset_size);
+                
+                length64 = uint64(dictionary(dict_row, 3));
+                length8 = typecast(length64, 'uint8');
+                length_bytes = length8(1 : length_size);
+                
+                cod_sequence = [cod_sequence, [offset_bytes, length_bytes]];
+            end
         end
         
         %% Performances analysis
-        byte_per_triplet = offset_size + length_size + symbol_size;
-        comp_msg_size = byte_per_triplet * size(dictionary, 1);
+        comp_msg_size = length(cod_sequence);
         original_msg_size = msg_length;
         compression_ratio = comp_msg_size * 100 / original_msg_size;
-        
         performances(win) = compression_ratio;
     end
     
     res_file_name = strcat(prefix_name, num2str(file_num));
     save(res_file_name, 'windows_span', 'performances');
 end
-
-

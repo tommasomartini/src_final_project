@@ -2,12 +2,16 @@
 %   - LZSS Algorithm -
 %   Tommaso Martini (108 15 80)
 
-%   v1.0
+%   v2.0 improvements:
+%   - floating bits management. I use a non multiple of 8 number os bits
+%   and code in bytes only at last step
+%   - I do not code as a pair if it is convenient to encode as a single
+%   symbol
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %   BUGS & "TO-FIX"'s
-%   + ho un ultima simbolo nel decoded_dict che interpreto come indice (lorem2)
-%   + la decoded sequence viene di lunghezza molto diversa (hodor)
+%   + nel decoding le lunghezze piu' grandi di 255 vengono scritte come
+%   255. Errore nella converisone da uint8 a double
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 close all;
@@ -25,8 +29,8 @@ coding_window_length = 2000;
 
 % Implementation parameters
 file_name_input = './cantrbry/alice29.txt';
-file_name_input = './big_files/2';
-% file_name_input = 'sam_test.txt';
+file_name_input = './big_files/5';
+% file_name_input = 'sam.txt';
 dictionary_output = 'lzss_dictionary_output_2.txt';
 file_name_output = 'lzss_output_2.txt';
 M = 256;  % alphabet cardinality
@@ -40,8 +44,16 @@ fclose(stored_file_ID);
 
 %% Encoder
 
-dict_index = 2; % index to span the dictionary
+% Expressed in bits
+offset_size = ceil(log2(search_window_length - 1));
+length_size = ceil(log2(coding_window_length - 1));
+symbol_size = ceil(log2(M));
 
+pair = offset_size + length_size + 1;   % number of bits to encode a pair
+single = symbol_size + 1;   % number of bits to encode a single symbol
+symbol_thr = ceil(pair / single);  % minimum number of symbol I can encode as a pair. If the match length is shorter than symbol_thr I encode them as single symbols
+
+dict_index = 2; % index to span the dictionary
 dictionary(1, :) = [0, 0, double(seq(1))];  % first triple
 
 search_index = 1;   % first element of the search window
@@ -87,12 +99,16 @@ while ~end_of_file
         
         if offset == 0  % no matches: encode a symbol
             dictionary(dict_index, :) = [0, 0, double(seq(coding_index))];
-        else    % match: encode a pair
+            dict_index = dict_index + 1;
+        elseif longest_match < symbol_thr   % match, but it is convenient to encode symbols independently
+            for i = 0 : longest_match - 1
+                dictionary(dict_index, :) = [0, 0, double(seq(coding_index + i))];
+                dict_index = dict_index + 1;
+            end
+        else    % good match: encode a pair
             dictionary(dict_index, :) = [1, offset, longest_match];
+            dict_index = dict_index + 1;
         end
-        
-        % New row in the dictionary
-        dict_index = dict_index + 1;
     end
     
     % Update indeces to scan the file
@@ -115,41 +131,34 @@ end
 
 %% Dictionary compression
 
-% How many bytes do I need to encode each parameter?
-offset_size = ceil(ceil(log2(search_window_length)) / 8);
-length_size = ceil(ceil(log2(coding_window_length - 1)) / 8);
-symbol_size = ceil(ceil(log2(M)) / 8);
-
 cod_file_ID = fopen(dictionary_output, 'w');
 
-cod_sequence = [];
+bit_cod_sequence = [];
 for dict_row = 1 : size(dictionary, 1)
     
-    if mod(dict_row - 1, 8) == 0    % every 8 dict rows I have 
+    if mod(dict_row - 1, 8) == 0    % every 8 dict rows I have to insert a byte with flags
         indeces_octave = dictionary(dict_row : min(dict_row + 8 - 1, size(dictionary, 1)), 1);
         indeces_octave = indeces_octave';
-        if size(dictionary, 1) - dict_row + 1 < 8
-            indeces_octave = [indeces_octave, zeros(1, 8 - (size(dictionary, 1) - dict_row + 1))];
+        if size(dictionary, 1) - dict_row + 1 < 8   % if I'm left with less than 8 rows...
+            indeces_octave = [indeces_octave, zeros(1, 8 - (size(dictionary, 1) - dict_row + 1))]; % put zeros as last flags
         end
-        indeces_byte = uint8(bi2de(indeces_octave));
-        cod_sequence = [cod_sequence, indeces_byte(1)];
+        bit_cod_sequence = [bit_cod_sequence, indeces_octave];
     end
     
     if dictionary(dict_row, 1) == 0     % encode a symbol
-        symbol64 = uint64(dictionary(dict_row, 3));
-        symbol8 = typecast(symbol64, 'uint8');
-        symbol_bytes = symbol8(1 : symbol_size);
-        cod_sequence = [cod_sequence, symbol_bytes];
+        curr_sym = dictionary(dict_row, 3);
+        curr_sym_bit = de2bi(curr_sym);
+        curr_sym_bit = [curr_sym_bit, zeros(1, symbol_size - length(curr_sym_bit))];
+        bit_cod_sequence = [bit_cod_sequence, curr_sym_bit];
     else    % encode a pair
-        offset64 = uint64(dictionary(dict_row, 2));
-        offset8 = typecast(offset64, 'uint8');
-        offset_bytes = offset8(1 : offset_size);
+        curr_off = dictionary(dict_row, 2);
+        curr_off_bit = de2bi(curr_off);
+        curr_off_bit = [curr_off_bit, zeros(1, offset_size - length(curr_off_bit))];
         
-        length64 = uint64(dictionary(dict_row, 3));
-        length8 = typecast(length64, 'uint8');
-        length_bytes = length8(1 : length_size);
-        
-        cod_sequence = [cod_sequence, [offset_bytes, length_bytes]];
+        curr_len = dictionary(dict_row, 3);
+        curr_len_bit = de2bi(curr_len);
+        curr_len_bit = [curr_len_bit, zeros(1, length_size - length(curr_len_bit))];
+        bit_cod_sequence = [bit_cod_sequence, curr_off_bit, curr_len_bit];
     end
     
     if verbose_mode
@@ -158,6 +167,27 @@ for dict_row = 1 : size(dictionary, 1)
         fprintf('Compression data progress: %d%% \n', round(dict_row * 100 / size(dictionary, 1)));
     end
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+bibit = bit_cod_sequence;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+num_final_zeros = mod(length(bit_cod_sequence), 8);
+bit_cod_sequence = [bit_cod_sequence, zeros(1, 8 - num_final_zeros)];
+cod_sequence = [];
+while ~isempty(bit_cod_sequence)
+    piece = bit_cod_sequence(1 : 8);
+    bit_cod_sequence = bit_cod_sequence(9 : end);
+    curr_byte = bi2de(piece);
+    cod_sequence = [cod_sequence, curr_byte];
+end
+
+% Embedding information about the size in bits of offset and length: 3
+% bytes
+symbol_size_byte = uint8(symbol_size);
+offset_size_byte = uint8(offset_size);
+length_size_byte = uint8(length_size);
+cod_sequence = [symbol_size_byte, offset_size_byte, length_size_byte, cod_sequence];
 
 fwrite(cod_file_ID, cod_sequence);
 fclose(cod_file_ID);
@@ -173,6 +203,24 @@ coded_dictionary_length = length(coded_dictionary);
 coded_dictionary = coded_dictionary';
 fclose(coded_file_ID);
 
+% Extract information about the sizes
+symbol_size = double(coded_dictionary(1));
+offset_size = double(coded_dictionary(2));
+length_size = double(coded_dictionary(3));
+coded_dictionary = coded_dictionary(4 : end);
+
+% Bring the dictionary in bit form
+bit_coded_dictionary = [];
+while ~isempty(coded_dictionary)
+    piece = coded_dictionary(1);
+    coded_dictionary = coded_dictionary(2 : end);
+    curr_bits = de2bi(piece);
+    curr_bits = [curr_bits, zeros(1, 8 - length(curr_bits))];
+    bit_coded_dictionary = [bit_coded_dictionary, curr_bits];
+end
+
+bit_coded_dictionary = double(bit_coded_dictionary);
+
 % decoded_dictionary = zeros(length(coded_dictionary) / (offset_size + length_size + symbol_size), 3);
 decoded_dictionary = [];
 dictionary_row_index = 1;
@@ -180,52 +228,38 @@ dictionary_row_index = 1;
 current_index = 9;
 indeces_sequence = [];
 
-iinnd = 0;
-
-while ~isempty(coded_dictionary)
+while length(bit_coded_dictionary) > min([symbol_size, offset_size, length_size])
     
-    if length(coded_dictionary) == 1
-        disp('sfsf')
-    end
     if current_index > 8
-        octave_index = coded_dictionary(1);
-        coded_dictionary = coded_dictionary(2 : end);
-        indeces_sequence = de2bi(octave_index);
+        indeces_sequence = bit_coded_dictionary(1 : 8);
+        bit_coded_dictionary = bit_coded_dictionary(9 : end);
         indeces_sequence = [indeces_sequence, zeros(1, 8 - length(indeces_sequence))];
         current_index = 1;
-        
-        iinnd = iinnd + 1;
-    end
-    
-    if isempty(coded_dictionary)
-        disp('sfsf')
     end
     
     if indeces_sequence(current_index) == 0   % decode a symbol
-        symbol_bytes = coded_dictionary(1 : symbol_size);
-        coded_dictionary = coded_dictionary(symbol_size + 1 : end);
-        symbol8_dec = [symbol_bytes, zeros(1, 8 - symbol_size)];
-        symbol64_dec = typecast(symbol8_dec, 'uint64');
-        symbol_dec = double(symbol64_dec);
-        decoded_dictionary(dictionary_row_index, :) = [0, 0, symbol_dec];
+        symbol_bits = bit_coded_dictionary(1 : symbol_size);
+        curr_sym = bi2de(symbol_bits);
+        bit_coded_dictionary = bit_coded_dictionary(symbol_size + 1 : end);
+        decoded_dictionary(dictionary_row_index, :) = [0, 0, curr_sym];
         dictionary_row_index = dictionary_row_index + 1;
     else    % decode a pair
-        offset_bytes = coded_dictionary(1 : offset_size);
-        coded_dictionary = coded_dictionary(offset_size + 1 : end);
-        offset8_dec = [offset_bytes, zeros(1, 8 - offset_size)];
-        offset64_dec = typecast(offset8_dec, 'uint64');
-        offset_dec = double(offset64_dec);
+        offset_bits = bit_coded_dictionary(1 : offset_size);
+        curr_off = bi2de(offset_bits);
+        bit_coded_dictionary = bit_coded_dictionary(offset_size + 1 : end);
         
-        length_bytes = coded_dictionary(1 : length_size);
-        coded_dictionary = coded_dictionary(length_size + 1 : end);
-        length8_dec = [length_bytes, zeros(1, 8 - length_size)];
-        length64_dec = typecast(length8_dec, 'uint64');
-        length_dec = double(length64_dec);
+        length_bits = bit_coded_dictionary(1 : length_size);
+        curr_len = bi2de(length_bits);
+        bit_coded_dictionary = bit_coded_dictionary(length_size + 1 : end);
         
-        decoded_dictionary(dictionary_row_index, :) = [1, offset_dec, length_dec];
+        decoded_dictionary(dictionary_row_index, :) = [1, curr_off, curr_len];
         dictionary_row_index = dictionary_row_index + 1;
     end
     current_index = current_index + 1;
+    
+    if decoded_dictionary(current_index - 1, :) ~= dictionary(current_index - 1, :)
+        disp('err')
+    end
     
     if verbose_mode
         clc;

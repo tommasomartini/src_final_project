@@ -26,7 +26,7 @@ coding_window_length = 2000;
 % Implementation parameters
 file_name_input = './cantrbry/alice29.txt';
 file_name_input = './big_files/2';
-file_name_input = 'sam_test.txt';
+% file_name_input = 'sam_test.txt';
 dictionary_output = 'lzss_dictionary_output_2.txt';
 file_name_output = 'lzss_output_2.txt';
 M = 256;  % alphabet cardinality
@@ -117,7 +117,7 @@ end
 
 % How many bytes do I need to encode each parameter?
 offset_size = ceil(ceil(log2(search_window_length)) / 8);
-length_size = ceil(ceil(log2(search_window_length + coding_window_length)) / 8);
+length_size = ceil(ceil(log2(coding_window_length - 1)) / 8);
 symbol_size = ceil(ceil(log2(M)) / 8);
 
 cod_file_ID = fopen(dictionary_output, 'w');
@@ -125,11 +125,11 @@ cod_file_ID = fopen(dictionary_output, 'w');
 cod_sequence = [];
 for dict_row = 1 : size(dictionary, 1)
     
-    if mod(dict_row - 1, 8) == 0
+    if mod(dict_row - 1, 8) == 0    % every 8 dict rows I have to insert a byte with flags
         indeces_octave = dictionary(dict_row : min(dict_row + 8 - 1, size(dictionary, 1)), 1);
         indeces_octave = indeces_octave';
-        if size(dictionary, 1) - dict_row + 1 < 8
-            indeces_octave = [indeces_octave, zeros(1, 8 - (size(dictionary, 1) - dict_row + 1))];
+        if size(dictionary, 1) - dict_row + 1 < 8   % if I'm left with less than 8 rows...
+            indeces_octave = [indeces_octave, zeros(1, 8 - (size(dictionary, 1) - dict_row + 1))]; % put zeros as last flags
         end
         indeces_byte = uint8(bi2de(indeces_octave));
         cod_sequence = [cod_sequence, indeces_byte(1)];

@@ -33,8 +33,7 @@ coding_window_length = 2000;
 % Implementation parameters
 file_name_input = './cantrbry/cp.html';
 file_name_input = './big_files/2';
-file_name_input = 'sam_test.txt';
-% file_name_input = 'test_Hodor.txt';
+% file_name_input = 'sam_test.txt';
 dictionary_output = 'lz77_dictionary_output_2.txt';
 file_name_output = 'lz77_output_2.txt';
 M = 256;  % alphabet cardinality
@@ -116,7 +115,7 @@ end
 
 % How many bytes do I need to encode each parameter?
 offset_size = ceil(ceil(log2(search_window_length)) / 8);
-length_size = ceil(ceil(log2(search_window_length + coding_window_length)) / 8);
+length_size = ceil(ceil(log2(coding_window_length - 1)) / 8);
 symbol_size = ceil(ceil(log2(M)) / 8);
 
 cod_file_ID = fopen(dictionary_output, 'w');

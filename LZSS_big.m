@@ -171,6 +171,119 @@ for file_num = file_numbers
             end
         end
         
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%         %% Pick up an encoded file
+%         coded_dictionary = cod_sequence;
+%         coded_dictionary_length = length(coded_dictionary);
+%         %         coded_dictionary = coded_dictionary';
+%         
+%         % decoded_dictionary = zeros(length(coded_dictionary) / (offset_size + length_size + symbol_size), 3);
+%         decoded_dictionary = [];
+%         dictionary_row_index = 1;
+%         
+%         current_index = 9;
+%         indeces_sequence = [];
+%         
+%         iinnd = 0;
+%         
+%         while ~isempty(coded_dictionary)
+%             
+%             if length(coded_dictionary) == 1
+%                 disp('sfsf')
+%             end
+%             if current_index > 8
+%                 octave_index = coded_dictionary(1);
+%                 coded_dictionary = coded_dictionary(2 : end);
+%                 indeces_sequence = de2bi(octave_index);
+%                 indeces_sequence = [indeces_sequence, zeros(1, 8 - length(indeces_sequence))];
+%                 current_index = 1;
+%                 
+%                 iinnd = iinnd + 1;
+%             end
+%             
+%             if isempty(coded_dictionary)
+%                 disp('sfsf')
+%             end
+%             
+%             if indeces_sequence(current_index) == 0   % decode a symbol
+%                 symbol_bytes = coded_dictionary(1 : symbol_size);
+%                 coded_dictionary = coded_dictionary(symbol_size + 1 : end);
+%                 symbol8_dec = [symbol_bytes, zeros(1, 8 - symbol_size)];
+%                 symbol64_dec = typecast(symbol8_dec, 'uint64');
+%                 symbol_dec = double(symbol64_dec);
+%                 decoded_dictionary(dictionary_row_index, :) = [0, 0, symbol_dec];
+%                 dictionary_row_index = dictionary_row_index + 1;
+%             else    % decode a pair
+%                 offset_bytes = coded_dictionary(1 : offset_size);
+%                 coded_dictionary = coded_dictionary(offset_size + 1 : end);
+%                 offset8_dec = [offset_bytes, zeros(1, 8 - offset_size)];
+%                 offset64_dec = typecast(offset8_dec, 'uint64');
+%                 offset_dec = double(offset64_dec);
+%                 
+%                 length_bytes = coded_dictionary(1 : length_size);
+%                 coded_dictionary = coded_dictionary(length_size + 1 : end);
+%                 length8_dec = [length_bytes, zeros(1, 8 - length_size)];
+%                 length64_dec = typecast(length8_dec, 'uint64');
+%                 length_dec = double(length64_dec);
+%                 
+%                 decoded_dictionary(dictionary_row_index, :) = [1, offset_dec, length_dec];
+%                 dictionary_row_index = dictionary_row_index + 1;
+%             end
+%             current_index = current_index + 1;
+%         end
+%         
+%         %% Check whether the dictionaries are equal
+%         if ~isequal(dictionary, decoded_dictionary)
+%             disp('Error! Dictionaries not equal!');
+%         end
+%         
+%         %% Decoder
+%         dict_length = size(decoded_dictionary, 1);
+%         
+%         decoded_sequence = -1;
+%         decoded_seq_index = 1;  % first EMPTY position
+%         
+%         for dictionary_row_index = 1 : dict_length
+%             
+%             dictionary_row = decoded_dictionary(dictionary_row_index, :);
+%             
+%             info_index = dictionary_row(1);
+%             
+%             if info_index == 0
+%                 last_symbol = dictionary_row(3);
+%                 decoded_sequence(decoded_seq_index) = last_symbol;
+%                 decoded_seq_index = decoded_seq_index + 1;
+%             else
+%                 offset = dictionary_row(2);
+%                 prefix_length = dictionary_row(3);
+%                 prefix_from = decoded_seq_index - offset;
+%                 
+%                 for prefix_symbol = 1 : prefix_length
+%                     decoded_sequence(decoded_seq_index) = decoded_sequence(prefix_from + prefix_symbol - 1);
+%                     decoded_seq_index = decoded_seq_index + 1;
+%                 end
+%             end
+%         end
+%         
+%         decoded_sequence = uint8(decoded_sequence);
+%         
+%         %% Error check 
+%         err_counter = 0;
+%         error_locations = [];
+%         for i = 1 : msg_length
+%             if seq(i) ~= decoded_sequence(i)
+%                 err_counter = err_counter + 1;
+%                 error_locations = [error_locations, i];
+%             end
+%         end
+%         
+%         if err_counter > 0
+%             fprintf('%d errors found! \n', err_counter);
+%         else
+%             disp('No errors found!');
+%         end
+%         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        
         %% Performances analysis
         comp_msg_size = length(cod_sequence);
         original_msg_size = msg_length;

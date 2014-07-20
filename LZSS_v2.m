@@ -22,6 +22,7 @@ clc;
 
 % Program parameters
 verbose_mode = false;
+generate_files = false;
 
 % Algorithm parameters
 search_window_length = 10000;
@@ -131,8 +132,6 @@ end
 
 %% Dictionary compression
 
-cod_file_ID = fopen(dictionary_output, 'w');
-
 bit_cod_sequence = [];
 for dict_row = 1 : size(dictionary, 1)
     
@@ -187,19 +186,24 @@ offset_size_byte = uint8(offset_size);
 length_size_byte = uint8(length_size);
 cod_sequence = [symbol_size_byte, offset_size_byte, length_size_byte, cod_sequence];
 
-fwrite(cod_file_ID, cod_sequence);
-fclose(cod_file_ID);
-
 if verbose_mode
     disp('Coding complete!');
 end
 
-%% Pick up an encoded file
-coded_file_ID = fopen(dictionary_output);
-coded_dictionary = fread(coded_file_ID, Inf, '*uint8');
-coded_dictionary_length = length(coded_dictionary);
-coded_dictionary = coded_dictionary';
-fclose(coded_file_ID);
+if generate_files
+    cod_file_ID = fopen(dictionary_output, 'w');
+    fwrite(cod_file_ID, cod_sequence);
+    fclose(cod_file_ID);
+    
+    %% Pick up an encoded file
+    coded_file_ID = fopen(dictionary_output);
+    coded_dictionary = fread(coded_file_ID, Inf, '*uint8');
+    coded_dictionary_length = length(coded_dictionary);
+    coded_dictionary = coded_dictionary';
+    fclose(coded_file_ID);
+else
+    coded_dictionary = cod_sequence;
+end
 
 % Extract information about the sizes
 symbol_size = double(coded_dictionary(1));
@@ -316,10 +320,12 @@ if verbose_mode
     disp('Decoding complete!');
 end
 
-%% Store the decoded file
-dec_file_ID = fopen(file_name_output, 'w');
-fprintf(dec_file_ID, char(decoded_sequence));
-fclose(dec_file_ID);
+if generate_files
+    %% Store the decoded file
+    dec_file_ID = fopen(file_name_output, 'w');
+    fprintf(dec_file_ID, char(decoded_sequence));
+    fclose(dec_file_ID);
+end
 
 %% Error check
 

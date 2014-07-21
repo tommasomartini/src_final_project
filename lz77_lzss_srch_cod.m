@@ -16,12 +16,12 @@ clc;
 lz77_prefix_name = 'lz77_comp_s1_';
 lzss_prefix_name = 'lzss_comp_s1_';
 
-windows_step = 1000;
-windows_start = 1000;
+windows_step = 500;
+windows_start = 500;
 
 M = 256;  % alphabet cardinality
 
-file_numbers = [1, 2, 3, 4, 6];
+file_numbers = [1];
 
 optimistic_files = [1];
 
@@ -57,6 +57,10 @@ for file_num = file_numbers
     % lengths of the windows
     search_windows_span = windows_start : windows_step : max_win_span;
     coding_windows_span = windows_start : windows_step : max_win_span;
+    
+%     search_windows_span = 1000;
+%     coding_windows_span = 10000;
+    
     lz77_performances = zeros(length(search_windows_span), length(coding_windows_span));
     lzss_performances = zeros(length(search_windows_span), length(coding_windows_span));
     
@@ -67,7 +71,7 @@ for file_num = file_numbers
             search_window_length = search_windows_span(search_win_index);
             coding_window_length = coding_windows_span(coding_win_index);
             
-            fprintf('File: %d, srch: %d, cod: %d \n', file_num, search_window_length, coding_window_length);
+%             fprintf('File: %d, srch: %d, cod: %d \n', file_num, search_window_length, coding_window_length);
             
             offset_size = ceil(log2(search_window_length));
             length_size = ceil(log2(coding_window_length));

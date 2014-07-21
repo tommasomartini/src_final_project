@@ -2,16 +2,12 @@
 %   - LZSS Algorithm -
 %   Tommaso Martini (108 15 80)
 
-%   v2.0 improvements:
-%   - floating bits management. I use a non multiple of 8 number os bits
-%   and code in bytes only at last step
-%   - I do not code as a pair if it is convenient to encode as a single
-%   symbol
+%   v3.0 improvements:
+%   - simpler management of flag bits
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %   BUGS & "TO-FIX"'s
-%   + nel decoding le lunghezze piu' grandi di 255 vengono scritte come
-%   255. Errore nella converisone da uint8 a double
+%   - ...
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 close all;
@@ -25,12 +21,12 @@ verbose_mode = false;
 generate_files = false;
 
 % Algorithm parameters
-search_window_length = 500;
-coding_window_length = 1000;
+search_window_length = 5000;
+coding_window_length = 2000;
 
 % Implementation parameters
 file_name_input = './cantrbry/alice29.txt';
-file_name_input = './big_files/2';
+file_name_input = './big_files/1';
 % file_name_input = 'sam.txt';
 dictionary_output = 'lzss_dictionary_output_2.txt';
 file_name_output = 'lzss_output_2.txt';
@@ -135,20 +131,11 @@ end
 bit_cod_sequence = [];
 for dict_row = 1 : size(dictionary, 1)
     
-    if mod(dict_row - 1, 8) == 0    % every 8 dict rows I have to insert a byte with flags
-        indeces_octave = dictionary(dict_row : min(dict_row + 8 - 1, size(dictionary, 1)), 1);
-        indeces_octave = indeces_octave';
-        if size(dictionary, 1) - dict_row + 1 < 8   % if I'm left with less than 8 rows...
-            indeces_octave = [indeces_octave, zeros(1, 8 - (size(dictionary, 1) - dict_row + 1))]; % put zeros as last flags
-        end
-        bit_cod_sequence = [bit_cod_sequence, indeces_octave];
-    end
-    
     if dictionary(dict_row, 1) == 0     % encode a symbol
         curr_sym = dictionary(dict_row, 3);
         curr_sym_bit = de2bi(curr_sym);
         curr_sym_bit = [curr_sym_bit, zeros(1, symbol_size - length(curr_sym_bit))];
-        bit_cod_sequence = [bit_cod_sequence, curr_sym_bit];
+        bit_cod_sequence = [bit_cod_sequence, 0, curr_sym_bit];
     else    % encode a pair
         curr_off = dictionary(dict_row, 2);
         curr_off_bit = de2bi(curr_off);
@@ -157,7 +144,7 @@ for dict_row = 1 : size(dictionary, 1)
         curr_len = dictionary(dict_row, 3);
         curr_len_bit = de2bi(curr_len);
         curr_len_bit = [curr_len_bit, zeros(1, length_size - length(curr_len_bit))];
-        bit_cod_sequence = [bit_cod_sequence, curr_off_bit, curr_len_bit];
+        bit_cod_sequence = [bit_cod_sequence, 1, curr_off_bit, curr_len_bit];
     end
     
     if verbose_mode
@@ -205,6 +192,8 @@ else
     coded_dictionary = cod_sequence;
 end
 
+%% Receiver side
+
 % Extract information about the sizes
 symbol_size = double(coded_dictionary(1));
 offset_size = double(coded_dictionary(2));
@@ -225,25 +214,17 @@ bit_coded_dictionary = double(bit_coded_dictionary);
 decoded_dictionary = [];
 dictionary_row_index = 1;
 
-current_index = 9;
-indeces_sequence = [];
-
 while length(bit_coded_dictionary) > min([symbol_size, offset_size, length_size])
     
-    if current_index > 8
-        indeces_sequence = bit_coded_dictionary(1 : 8);
-        bit_coded_dictionary = bit_coded_dictionary(9 : end);
-        indeces_sequence = [indeces_sequence, zeros(1, 8 - length(indeces_sequence))];
-        current_index = 1;
-    end
-    
-    if indeces_sequence(current_index) == 0   % decode a symbol
+    if bit_coded_dictionary(1) == 0   % decode a symbol
+        bit_coded_dictionary = bit_coded_dictionary(2 : end);
         symbol_bits = bit_coded_dictionary(1 : symbol_size);
         curr_sym = bi2de(symbol_bits);
         bit_coded_dictionary = bit_coded_dictionary(symbol_size + 1 : end);
         decoded_dictionary(dictionary_row_index, :) = [0, 0, curr_sym];
         dictionary_row_index = dictionary_row_index + 1;
     else    % decode a pair
+        bit_coded_dictionary = bit_coded_dictionary(2 : end);
         offset_bits = bit_coded_dictionary(1 : offset_size);
         curr_off = bi2de(offset_bits);
         bit_coded_dictionary = bit_coded_dictionary(offset_size + 1 : end);
@@ -255,7 +236,6 @@ while length(bit_coded_dictionary) > min([symbol_size, offset_size, length_size]
         decoded_dictionary(dictionary_row_index, :) = [1, curr_off, curr_len];
         dictionary_row_index = dictionary_row_index + 1;
     end
-    current_index = current_index + 1;
     
     if verbose_mode
         clc;

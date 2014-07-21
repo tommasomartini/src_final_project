@@ -14,15 +14,21 @@ close all;
 clear all;
 clc;
 
+prefix_name = 'comparison_series2_';
+
 M = 256;  % alphabet cardinality
 
-file_numbers = 1 : 7;
+file_numbers = 3 : 6;
 
 for file_num = file_numbers
     
     file_num
     
+<<<<<<< HEAD
    switch file_num
+=======
+    switch file_num
+>>>>>>> 47a9b2cf1e14ff453d1f3178e5486366796b0823
         case 1
             max_win_span = 10000;
         case 2
@@ -53,10 +59,13 @@ for file_num = file_numbers
     % lengths of the windows
     search_windows_span = 1000 : 1000 : max_win_span;
     coding_windows_span = 1000 : 1000 : max_win_span;
+<<<<<<< HEAD
 %     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %     search_windows_span = 100 : 500 : 1000;
 %     coding_windows_span = 100 : 500 : 1000;
 %     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+=======
+>>>>>>> 47a9b2cf1e14ff453d1f3178e5486366796b0823
     performances = zeros(length(search_windows_span), length(coding_windows_span));
     
     for search_win = 1 : length(search_windows_span)
@@ -90,37 +99,32 @@ for file_num = file_numbers
                     dictionary(dict_index, :) = [0, 0, double(seq(end))];
                     dict_index = dict_index + 1;
                 else
-                    conti = true;
-                    tmp_pattern = pattern(1);
+                    match_length = length(pattern);
+                    search_string = [seq(search_index : coding_index - 1), pattern(1 : end - 1)];   % the search_string is made by search_window and coding_window
+                    match_positions = strfind(search_string, pattern);
                     
-                    longest_match = 0;
-                    match_position = coding_index;
-                    
-                    while conti
-                        search_string = [seq(search_index : coding_index - 1), tmp_pattern(1 : end - 1)];   % the search_string is made by search_window and coding_window
-                        match_positions = strfind(search_string, tmp_pattern);
-                        if ~isempty(match_positions)    % some matches found: search again
-                            longest_match = length(tmp_pattern);
-                            match_position = search_index + match_positions(1) - 1;
-                            if length(tmp_pattern) < length(pattern)
-                                tmp_pattern = pattern(1 : length(tmp_pattern) + 1);
-                            else    % I have used the whole pattern
-                                conti = false;
-                            end
-                        else    % no matches found: stop the cycle
-                            conti = false;
+                    while isempty(match_positions)
+                        pattern = pattern(1 : end - 1);
+                        search_string = search_string(1 : end - 1);
+                        match_length = length(pattern);
+                        if isempty(pattern)    % there are no matches
+                            match_positions = coding_index; % in this way I know there have been no matches
+                        else
+                            match_positions = strfind(search_string, pattern);
                         end
                     end
                     
+                    match_position = search_index + match_positions(1) - 1;
                     offset = coding_index - match_position;
                     
                     % New row in the dictionary
-                    dictionary(dict_index, :) = [offset, longest_match, double(seq(coding_index + longest_match))];
+                    dictionary(dict_index, :) = [offset, match_length, double(seq(coding_index + match_length))];
                     dict_index = dict_index + 1;
                 end
                 
                 % Update indeces to scan the file
-                coding_index = coding_index + longest_match + 1;
+                % Update indeces to scan the file
+                coding_index = coding_index + match_length + 1;
                 search_index = max(coding_index - search_window_length, 1); % you cannot start from the char before the first one
                 
                 if coding_index > length(seq)
@@ -158,17 +162,14 @@ for file_num = file_numbers
             byte_per_triplet = offset_size + length_size + symbol_size;
             comp_msg_size = byte_per_triplet * size(dictionary, 1);
             original_msg_size = msg_length;
-            compression_ratio = round(comp_msg_size * 100 / original_msg_size);
+            compression_ratio = comp_msg_size * 100 / original_msg_size;
             
             performances(search_win, coding_win) = compression_ratio;
         end
     end
     
-    res_file_name = strcat('performances_results_comp_search_coding_', num2str(file_num));
+    res_file_name = strcat(prefix_name, num2str(file_num));
     save(res_file_name, 'search_windows_span', 'coding_windows_span', 'performances');
-    
-%     figure;
-%     mesh(search_windows_span, coding_windows_span, performances);
 end
 
 

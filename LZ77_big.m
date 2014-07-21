@@ -14,9 +14,11 @@ close all;
 clear all;
 clc;
 
+prefix_name = 'lz77_res_series2_';
+
 M = 256;  % alphabet cardinality
 
-file_numbers = 3 : 4;
+file_numbers = 2 : 2;
 
 for file_num = file_numbers
     
@@ -152,12 +154,12 @@ for file_num = file_numbers
         byte_per_triplet = offset_size + length_size + symbol_size;
         comp_msg_size = byte_per_triplet * size(dictionary, 1);
         original_msg_size = msg_length;
-        compression_ratio = round(comp_msg_size * 100 / original_msg_size);
+        compression_ratio = comp_msg_size * 100 / original_msg_size;
         
         performances(win) = compression_ratio;
     end
     
-    res_file_name = strcat('performances_results_big_', num2str(file_num));
+    res_file_name = strcat(prefix_name, num2str(file_num));
     save(res_file_name, 'windows_span', 'performances');
 end
 

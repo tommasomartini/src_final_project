@@ -1,0 +1,18 @@
+\begin{thebibliography}{1}
+
+\bibitem{knuth1}
+J.H.~MORRIS D.~KNUTH and V.~PRATT.
+\newblock Fast pattern matching in strings.
+\newblock {\em SIAM Journal on Computing}, 1977.
+
+\bibitem{storer1}
+J.A. STORER and T.G. SZYMANSKI.
+\newblock Data compression via textual substitution.
+\newblock {\em J.ACM}, 1982.
+
+\bibitem{ziv1}
+J.~ZIV and A.~LEMPEL.
+\newblock A universal algorithm for sequential data compression.
+\newblock {\em IEEE Transactions on Information Theory}, 1977.
+
+\end{thebibliography}

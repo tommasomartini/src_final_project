@@ -24,17 +24,18 @@ clc;
 %% Initialization
 
 % Program parameters
-verbose_mode = true;
+verbose_mode = false;
 
 % Algorithm parameters
-search_window_length = 2000;
-coding_window_length = 2000;
+search_window_length = 10000;
+coding_window_length = 1000;
 
 % Implementation parameters
 file_name_input = './cantrbry/cp.html';
-% file_name_input = 'test_Hodor.txt';
-dictionary_output = 'dictionary_output.txt';
-file_name_output = 'sum_output.txt';
+file_name_input = './big_files/4';
+% file_name_input = 'sam_test.txt';
+dictionary_output = 'lz77_dictionary_output_2.txt';
+file_name_output = 'lz77_output_2.txt';
 M = 256;  % alphabet cardinality
 
 %% Pick a file from the filesystem
@@ -114,7 +115,7 @@ end
 
 % How many bytes do I need to encode each parameter?
 offset_size = ceil(ceil(log2(search_window_length)) / 8);
-length_size = ceil(ceil(log2(search_window_length + coding_window_length)) / 8);
+length_size = ceil(ceil(log2(coding_window_length - 1)) / 8);
 symbol_size = ceil(ceil(log2(M)) / 8);
 
 cod_file_ID = fopen(dictionary_output, 'w');
@@ -269,7 +270,7 @@ end
 byte_per_triplet = offset_size + length_size + symbol_size;
 comp_msg_size = byte_per_triplet * dict_length
 original_msg_size = msg_length
-compression_ratio = round(comp_msg_size * 100 / original_msg_size);
+compression_ratio = comp_msg_size * 100 / original_msg_size
 if verbose_mode
     fprintf('Compression: %d %%', compression_ratio);
 end

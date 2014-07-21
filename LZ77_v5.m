@@ -3,12 +3,12 @@
 %   Tommaso Martini (108 15 80)
 
 %   v5.0 improvements:
-%   - if there is a prefix in the coding window which has a longer match in
-%   the search window use that pattern instead of the prefix
+%   - floating bits management. I use a non multiple of 8 number os bits
+%   and code in bytes only at last step
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %   BUGS & "TO-FIX"'s
-%   - Incompleto...
+%   - ...
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 close all;
@@ -18,17 +18,18 @@ clc;
 %% Initialization
 
 % Program parameters
-verbose_mode = true;
+verbose_mode = false;
+generate_files = false;
 
 % Algorithm parameters
-search_window_length = 2000;
-coding_window_length = 20000;
+search_window_length = 5000;
+coding_window_length = 5000;
 
 % Implementation parameters
-file_name_input = './cantrbry/alice29.txt';
-file_name_input = 'hodor.txt';
-dictionary_output = 'dictionary_output.txt';
-file_name_output = 'LZ775_output.txt';
+file_name_input = './cantrbry/cp.html';
+file_name_input = './big_files/4';
+dictionary_output = 'lz77_dictionary_output_2.txt';
+file_name_output = 'lz77_output_2.txt';
 M = 256;  % alphabet cardinality
 
 %% Pick a file from the filesystem
@@ -39,6 +40,10 @@ msg_length = length(seq);
 fclose(stored_file_ID);
 
 %% Encoder
+
+offset_size = ceil(log2(search_window_length));
+length_size = ceil(log2(coding_window_length));
+symbol_size = ceil(log2(M));
 
 dict_index = 2; % index to span the dictionary
 
@@ -51,54 +56,44 @@ end_of_file = false;    % when the end of the file is reached this is turned to 
 
 while ~end_of_file
     
-    matches_lengths = zeros(1, coding_window_length);
+    % Pattern matching
     
-    for start = 0 : coding_window_length - 1
-        pattern = seq(coding_index + start : min(msg_length - 1, coding_index + coding_window_length - 1 + start));
-        m = length(pattern);
+    pattern = seq(coding_index : min(msg_length - 1, coding_index + coding_window_length - 1));
+    m = length(pattern);
+    
+    if m == 0   % last symbol of the sequence: encode it with a single symbol (so doing I'm not wasting resources)
+        % New row in the dictionary
+        dictionary(dict_index, :) = [0, 0, double(seq(end))];
+        dict_index = dict_index + 1;
+    else
+        conti = true;
+        tmp_pattern = pattern(1);
         
-        if m == 0   % last symbol of the sequence: encode it with a single symbol (so doing I'm not wasting resources)
-            matches_lengths(start + 1) = 0;
-        else
-            conti = true;
-            tmp_pattern = pattern(1);
-            
-            longest_match = 0;
-            match_position = coding_index;
-            
-            while conti
-                search_string = [seq(search_index : coding_index - 1), tmp_pattern(1 : end - 1)];   % the search_string is made by search_window and coding_window
-                match_positions = strfind(search_string, tmp_pattern);
-                if ~isempty(match_positions)    % some matches found: search again
-                    longest_match = length(tmp_pattern);
-                    match_position = search_index + match_positions(1) - 1;
-                    if length(tmp_pattern) < length(pattern)
-                        tmp_pattern = pattern(1 : length(tmp_pattern) + 1);
-                    else    % I have used the whole pattern
-                        conti = false;
-                    end
-                else    % no matches found: stop the cycle
+        longest_match = 0;
+        match_position = coding_index;
+        
+        while conti
+            search_string = [seq(search_index : coding_index - 1), tmp_pattern(1 : end - 1)];   % the search_string is made by search_window and coding_window
+            match_positions = strfind(search_string, tmp_pattern);
+            if ~isempty(match_positions)    % some matches found: search again
+                longest_match = length(tmp_pattern);
+                match_position = search_index + match_positions(1) - 1;
+                if length(tmp_pattern) < length(pattern)
+                    tmp_pattern = pattern(1 : length(tmp_pattern) + 1);
+                else    % I have used the whole pattern
                     conti = false;
                 end
+            else    % no matches found: stop the cycle
+                conti = false;
             end
-            matches_lengths(start + 1) = longest_match;
         end
+        
+        offset = coding_index - match_position;
+        
+        % New row in the dictionary
+        dictionary(dict_index, :) = [offset, longest_match, double(seq(coding_index + longest_match))];
+        dict_index = dict_index + 1;
     end
-    
-    [current_best_match, position_best_match] = max(matches_lengths);
-    
-    if current_best_match > 0
-        for i = 0 : position_best_match - 1
-            dictionary(dict_index, :) = [0, 0, double(seq(coding_index + i))];
-            dict_index = dict_index + 1;
-        end
-    end
-    
-    offset = coding_index - match_position;
-    
-    % New row in the dictionary
-    dictionary(dict_index, :) = [offset, longest_match, double(seq(coding_index + longest_match))];
-    dict_index = dict_index + 1;
     
     % Update indeces to scan the file
     coding_index = coding_index + longest_match + 1;
@@ -116,29 +111,22 @@ end
 
 %% Dictionary compression
 
-% How many bytes do I need to encode each parameter?
-offset_size = ceil(ceil(log2(search_window_length)) / 8);
-length_size = ceil(ceil(log2(search_window_length + coding_window_length)) / 8);
-symbol_size = ceil(ceil(log2(M)) / 8);
-
-cod_file_ID = fopen(dictionary_output, 'w');
-
-cod_sequence = [];
+bit_cod_sequence = [];
 for dict_row = 1 : size(dictionary, 1)
     
-    offset64 = uint64(dictionary(dict_row, 1));
-    offset8 = typecast(offset64, 'uint8');
-    offset_bytes = offset8(1 : offset_size);
+    curr_off = dictionary(dict_row, 1);
+    curr_off_bit = de2bi(curr_off);
+    curr_off_bit = [curr_off_bit, zeros(1, offset_size - length(curr_off_bit))];
     
-    length64 = uint64(dictionary(dict_row, 2));
-    length8 = typecast(length64, 'uint8');
-    length_bytes = length8(1 : length_size);
+    curr_len = dictionary(dict_row, 2);
+    curr_len_bit = de2bi(curr_len);
+    curr_len_bit = [curr_len_bit, zeros(1, length_size - length(curr_len_bit))];
     
-    symbol64 = uint64(dictionary(dict_row, 3));
-    symbol8 = typecast(symbol64, 'uint8');
-    symbol_bytes = symbol8(1 : symbol_size);
+    curr_sym = dictionary(dict_row, 3);
+    curr_sym_bit = de2bi(curr_sym);
+    curr_sym_bit = [curr_sym_bit, zeros(1, symbol_size - length(curr_sym_bit))];
     
-    cod_sequence = [cod_sequence, [offset_bytes, length_bytes, symbol_bytes]];
+    bit_cod_sequence = [bit_cod_sequence, curr_off_bit, curr_len_bit, curr_sym_bit];
     
     if verbose_mode
         clc;
@@ -147,41 +135,80 @@ for dict_row = 1 : size(dictionary, 1)
     end
 end
 
-fwrite(cod_file_ID, cod_sequence);
-fclose(cod_file_ID);
+num_final_zeros = mod(length(bit_cod_sequence), 8);
+if num_final_zeros > 0
+    bit_cod_sequence = [bit_cod_sequence, zeros(1, 8 - num_final_zeros)];
+end
+cod_sequence = [];
+while ~isempty(bit_cod_sequence)
+    piece = bit_cod_sequence(1 : 8);
+    bit_cod_sequence = bit_cod_sequence(9 : end);
+    curr_byte = bi2de(piece);
+    cod_sequence = [cod_sequence, curr_byte];
+end
+
+% Embedding information about the size in bits of offset and length: 3
+% bytes
+symbol_size_byte = uint8(symbol_size);
+offset_size_byte = uint8(offset_size);
+length_size_byte = uint8(length_size);
+cod_sequence = [symbol_size_byte, offset_size_byte, length_size_byte, cod_sequence];
 
 if verbose_mode
     disp('Coding complete!');
 end
 
-%% Pick up an encoded file
-coded_file_ID = fopen(dictionary_output);
-coded_dictionary = fread(coded_file_ID, Inf, '*uint8');
-coded_dictionary = coded_dictionary';
-fclose(coded_file_ID);
+if generate_files
+    cod_file_ID = fopen(dictionary_output, 'w');
+    fwrite(cod_file_ID, cod_sequence);
+    fclose(cod_file_ID);
+    
+    %% Pick up an encoded file
+    coded_file_ID = fopen(dictionary_output);
+    coded_dictionary = fread(coded_file_ID, Inf, '*uint8');
+    coded_dictionary = coded_dictionary';
+    fclose(coded_file_ID);
+else
+    coded_dictionary = cod_sequence;
+end
 
-decoded_dictionary = zeros(length(coded_dictionary) / (offset_size + length_size + symbol_size), 3);
-for dict_row = 1 : size(decoded_dictionary, 1)
+% Extract information about the sizes
+symbol_size = double(coded_dictionary(1));
+offset_size = double(coded_dictionary(2));
+length_size = double(coded_dictionary(3));
+coded_dictionary = coded_dictionary(4 : end);
+
+% Bring the dictionary in bit form
+bit_coded_dictionary = [];
+while ~isempty(coded_dictionary)
+    piece = coded_dictionary(1);
+    coded_dictionary = coded_dictionary(2 : end);
+    curr_bits = de2bi(piece);
+    curr_bits = [curr_bits, zeros(1, 8 - length(curr_bits))];
+    bit_coded_dictionary = [bit_coded_dictionary, curr_bits];
+end
+bit_coded_dictionary = double(bit_coded_dictionary);
+
+% decoded_dictionary = zeros(length(coded_dictionary) / (offset_size + length_size + symbol_size), 3);
+decoded_dictionary = [];
+dictionary_row_index = 1;
+
+while length(bit_coded_dictionary) >= symbol_size + offset_size + length_size
     
-    offset_bytes = coded_dictionary(1 : offset_size);
-    coded_dictionary = coded_dictionary(offset_size + 1 : end);
-    offset8_dec = [offset_bytes, zeros(1, 8 - offset_size)];
-    offset64_dec = typecast(offset8_dec, 'uint64');
-    offset_dec = double(offset64_dec);
+    offset_bits = bit_coded_dictionary(1 : offset_size);
+    curr_off = bi2de(offset_bits);
+    bit_coded_dictionary = bit_coded_dictionary(offset_size + 1 : end);
     
-    length_bytes = coded_dictionary(1 : length_size);
-    coded_dictionary = coded_dictionary(length_size + 1 : end);
-    length8_dec = [length_bytes, zeros(1, 8 - length_size)];
-    length64_dec = typecast(length8_dec, 'uint64');
-    length_dec = double(length64_dec);
+    length_bits = bit_coded_dictionary(1 : length_size);
+    curr_len = bi2de(length_bits);
+    bit_coded_dictionary = bit_coded_dictionary(length_size + 1 : end);
     
-    symbol_bytes = coded_dictionary(1 : symbol_size);
-    coded_dictionary = coded_dictionary(symbol_size + 1 : end);
-    symbol8_dec = [symbol_bytes, zeros(1, 8 - symbol_size)];
-    symbol64_dec = typecast(symbol8_dec, 'uint64');
-    symbol_dec = double(symbol64_dec);
+    symbol_bits = bit_coded_dictionary(1 : symbol_size);
+    curr_sym = bi2de(symbol_bits);
+    bit_coded_dictionary = bit_coded_dictionary(symbol_size + 1 : end);
     
-    decoded_dictionary(dict_row, :) = [offset_dec, length_dec, symbol_dec];
+    decoded_dictionary(dictionary_row_index, :) = [curr_off, curr_len, curr_sym];
+    dictionary_row_index = dictionary_row_index + 1;
     
     if verbose_mode
         clc;
@@ -243,10 +270,12 @@ if verbose_mode
     disp('Decoding complete!');
 end
 
-%% Store the decoded file
-dec_file_ID = fopen(file_name_output, 'w');
-fprintf(dec_file_ID, char(decoded_sequence));
-fclose(dec_file_ID);
+if generate_files
+    %% Store the decoded file
+    dec_file_ID = fopen(file_name_output, 'w');
+    fprintf(dec_file_ID, char(decoded_sequence));
+    fclose(dec_file_ID);
+end
 
 %% Error check
 
@@ -270,10 +299,9 @@ else
 end
 
 %% Performances analysis
-byte_per_triplet = offset_size + length_size + symbol_size;
-comp_msg_size = byte_per_triplet * dict_length
+comp_msg_size = length(cod_sequence)
 original_msg_size = msg_length
-compression_ratio = round(comp_msg_size * 100 / original_msg_size);
+compression_ratio = comp_msg_size * 100 / original_msg_size
 if verbose_mode
     fprintf('Compression: %d %%', compression_ratio);
 end

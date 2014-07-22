@@ -108,7 +108,7 @@ $L_s$ & LZ77 & LZSS \\ \hline
 \end{tabular}
 \end{center}
 
-Code files as \texttt{web.html} and \texttt{code.c} presents a greater redundancy because of their scientific format; strict rules of the programming languages makes them very repetitive and thus the LZ77 and the LZSS manages to perform a better compression of such files. The following tables show the results for the two files where a $2000$ symbols long \textit{coding window} has been used:
+Code files as \texttt{web.html} and \texttt{code.c} presents a greater redundancy because of their scientific format; strict rules of the programming languages make them very repetitive and thus the LZ77 and the LZSS manage to perform a better compression of such files. The following tables show the results for the two files where a $2000$ symbols long \textit{coding window} has been used:
 \begin{center}
 \begin{tabular}{r | c | c |}
 \multicolumn{3}{c|}{\texttt{code.c}} \\
@@ -176,15 +176,5 @@ From the last three tables it could seem that the LZ77 improves with the increas
 \end{figure}
 \end{center}
 
-%\begin{center}
-%\begin{figure}[H]
-%\includegraphics[width=\textwidth]{report_img/snr.eps}
-%\caption{Comparison between systems performances.}
-%\end{figure}
-%\end{center}
-
 %It is easy to see that performances tends to improve with the growing of the \textit{searching window}. We could expect such a result: with shorter windows it is more difficult to find repeated pattern to refer to and, in some cases, we could neither realize that such patterns are present in the message. For a highly redundant input stream a long window allows to encode at the same time much more repetitions; even though the number of bits needed to represent a wide range of values grows with the increasing of the window, this happens with a logarithmic trend, while the amount of space used to encode a sequence byte per byte grows linearly. Clearly the usage of large windows implies a drop of performances from a computational time point of view. 
 %In the best compression scenario, we would like to have a \textit{search window} as long as the message itself, but, since this is not suitable for time reason, commercial softwares usually work with block of symbols $32$ Kbyte long with windows of
-%
-%\subsection{\textit{Searching window} and \textit{coding window} variations}
-%The \textit{LZ77} algorithm has, in fact, two parameters we can act to: the lengths of the \textit{searching window} and of the \textit{coding window}. It could be interesting wondering what happens if we stretch both the windows. From the following 2D graphs we can see that the length of the \textit{coding window} has, actually, a low impact on coding performances. The reason is that, for a redundant message, 

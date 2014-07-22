@@ -95,7 +95,7 @@ $L_s$ & LZ77 & LZSS \\ \hline
 We can notice two main facts: the first is that LZSS compresses in general better than LZ77; the second is that LZSS' performances decrease much more slowly than LZ77's; if we inspect the dictionaries created by the two algorithms, we can try to spot the reason of such difference: the LZ77 dictionary contains a lot of references to an only previous symbol and we cannot avoid using a whole triplet to encode them. On the other hand the LZSS algorithm is able to realize that it is not a good deal to waste a whole triplet to express an only symbol and it encodes it as a single byte. In this way we ideally would have a dictionary with the same dimensions of the message, but, unlucklily, the coding algorithm also includes the flag bits. Thus, it is practically quite impossible to compress a random sequence: if we try to compress it, we are going to hopelessly expand it.
 
 \subsection{Common files}
-The file \texttt{shak.txt} is an example of humanly-written text file. As we can see from the results of the experiment, LZ77 and LZSS are not the best choice for compressing this kind of file. The reason is that the spoken language has not a strong redundancy and patterns of characters are often short and repeated only a few times. The table below shows the performances with $L_c = 2000$:
+The file \texttt{shak.txt} is an example of human-written text file. As we can see from the results of the experiment, LZ77 and LZSS are not the best choice for compressing this kind of file. The reason is that the spoken language has not a strong redundancy and patterns of characters are often short and repeated only a few times. The table below shows the performances with $L_c = 2000$:
 \begin{center}
 \begin{tabular}{r | c | c |}
 \multicolumn{3}{c|}{\texttt{shak.txt}} \\ 
@@ -111,24 +111,24 @@ $L_s$ & LZ77 & LZSS \\ \hline
 Code files as \texttt{web.html} and \texttt{code.c} presents a greater redundancy because of their scientific format; strict rules of the programming languages makes them very repetitive and thus the LZ77 and the LZSS manages to perform a better compression of such files. The following tables show the results for the two files where a $2000$ symbols long \textit{coding window} has been used:
 \begin{center}
 \begin{tabular}{r | c | c |}
-\multicolumn{3}{c|}{\texttt{web.html}} \\
-\hline
-$L_s$ & LZ77 & LZSS \\ \hline
-1000 & $59.82$\% & $49.27$\% \\
-5000& $51.65$\% & $57.49$\% \\
-10000& $51.45$\% & $60.19$\% \\
-\hline
-\end{tabular}
-
-\vspace{0.5cm}
-
-\begin{tabular}{r | c | c |}
 \multicolumn{3}{c|}{\texttt{code.c}} \\
 \hline
 $L_s$ & LZ77 & LZSS \\ \hline
 1000 & $73.53$\% & $59.73$\% \\
 5000& $62.25$\% & $71.35$\% \\
 10000& $58.68$\% & $76.14$\% \\
+\hline
+\end{tabular}
+
+\vspace{0.5cm}
+
+\begin{tabular}{r | c | c |}
+\multicolumn{3}{c|}{\texttt{web.html}} \\
+\hline
+$L_s$ & LZ77 & LZSS \\ \hline
+1000 & $59.82$\% & $49.27$\% \\
+5000& $51.65$\% & $57.49$\% \\
+10000& $51.45$\% & $60.19$\% \\
 \hline
 \end{tabular}
 \end{center}
@@ -151,28 +151,28 @@ From the last three tables it could seem that the LZ77 improves with the increas
 \begin{center}
 \begin{figure}[H]
 \includegraphics[width=8.5cm]{images/rep_surf.png}
-\caption{LZ77 compression ratio in function of $L_s$ and $L_c$.}
+\caption{LZ77 compression ratio for \texttt{shak.txt}.}
 \end{figure}
 \end{center}
 
 \begin{center}
 \begin{figure}[H]
 \includegraphics[width=8.5cm]{images/rep_surf.png}
-\caption{LZ77 compression ratio in function of $L_s$ and $L_c$.}
+\caption{LZSS compression ratio for \texttt{shak.txt}.}
 \end{figure}
 \end{center}
 
 \begin{center}
 \begin{figure}[H]
 \includegraphics[width=8.5cm]{images/rep_surf.png}
-\caption{LZ77 compression ratio in function of $L_s$ and $L_c$.}
+\caption{LZ77 compression ratio for \texttt{code.c}.}
 \end{figure}
 \end{center}
 
 \begin{center}
 \begin{figure}[H]
 \includegraphics[width=8.5cm]{images/rep_surf.png}
-\caption{LZ77 compression ratio in function of $L_s$ and $L_c$.}
+\caption{LZSS compression ratio for \texttt{code.c}.}
 \end{figure}
 \end{center}
 

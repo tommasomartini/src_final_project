@@ -21,14 +21,12 @@ verbose_mode = false;
 generate_files = false;
 
 % Algorithm parameters
-search_window_length = 1000;
+search_window_length = 10000;
 coding_window_length = 2000;
 
 % Implementation parameters
-file_name_input = './cantrbry/alice29.txt';
-file_name_input = './big_files/4';
-% file_name_input = './media_files/lena.bmp';
-% file_name_input = 'sam.txt';
+file_name_input = './big_files/7';
+file_name_input = './media_files/lena.bmp';
 dictionary_output = 'lzss_dictionary_output_2.txt';
 file_name_output = 'lzss_output_2.txt';
 M = 256;  % alphabet cardinality
@@ -194,142 +192,142 @@ else
 end
 
 %% Receiver side
-
-% Extract information about the sizes
-symbol_size = double(coded_dictionary(1));
-offset_size = double(coded_dictionary(2));
-length_size = double(coded_dictionary(3));
-coded_dictionary = coded_dictionary(4 : end);
-
-% Bring the dictionary in bit form
-bit_coded_dictionary = [];
-while ~isempty(coded_dictionary)
-    piece = coded_dictionary(1);
-    coded_dictionary = coded_dictionary(2 : end);
-    curr_bits = de2bi(piece);
-    curr_bits = [curr_bits, zeros(1, 8 - length(curr_bits))];
-    bit_coded_dictionary = [bit_coded_dictionary, curr_bits];
-end
-bit_coded_dictionary = double(bit_coded_dictionary);
-
-decoded_dictionary = [];
-dictionary_row_index = 1;
-
-while length(bit_coded_dictionary) > min([symbol_size, offset_size, length_size])
-    
-    if bit_coded_dictionary(1) == 0   % decode a symbol
-        bit_coded_dictionary = bit_coded_dictionary(2 : end);
-        symbol_bits = bit_coded_dictionary(1 : symbol_size);
-        curr_sym = bi2de(symbol_bits);
-        bit_coded_dictionary = bit_coded_dictionary(symbol_size + 1 : end);
-        decoded_dictionary(dictionary_row_index, :) = [0, 0, curr_sym];
-        dictionary_row_index = dictionary_row_index + 1;
-    else    % decode a pair
-        bit_coded_dictionary = bit_coded_dictionary(2 : end);
-        offset_bits = bit_coded_dictionary(1 : offset_size);
-        curr_off = bi2de(offset_bits);
-        bit_coded_dictionary = bit_coded_dictionary(offset_size + 1 : end);
-        
-        length_bits = bit_coded_dictionary(1 : length_size);
-        curr_len = bi2de(length_bits);
-        bit_coded_dictionary = bit_coded_dictionary(length_size + 1 : end);
-        
-        decoded_dictionary(dictionary_row_index, :) = [1, curr_off, curr_len];
-        dictionary_row_index = dictionary_row_index + 1;
-    end
-    
-    if verbose_mode
-        clc;
-        disp('Dictionary generation progress: 100%');
-        disp('Compression data progress: 100%');
-        disp('Coding complete!');
-        fprintf('Expanding dictionary progress: %d%%', round((coded_dictionary_length -length(coded_dictionary)) * 100 / coded_dictionary_length));
-    end
-end
-
-%% Check whether the dictionaries are equal
-if ~isequal(dictionary, decoded_dictionary)
-    disp('Error! Dictionaries not equal!');
-end
-
-%% Decoder
-dict_length = size(decoded_dictionary, 1);
-
-decoded_sequence = -1;
-decoded_seq_index = 1;  % first EMPTY position
-
-for dictionary_row_index = 1 : dict_length
-    
-    dictionary_row = decoded_dictionary(dictionary_row_index, :);
-    
-    info_index = dictionary_row(1);
-    
-    if info_index == 0
-        last_symbol = dictionary_row(3);
-        decoded_sequence(decoded_seq_index) = last_symbol;
-        decoded_seq_index = decoded_seq_index + 1;
-    else
-        offset = dictionary_row(2);
-        prefix_length = dictionary_row(3);
-        prefix_from = decoded_seq_index - offset;
-        
-        for prefix_symbol = 1 : prefix_length
-            decoded_sequence(decoded_seq_index) = decoded_sequence(prefix_from + prefix_symbol - 1);
-            decoded_seq_index = decoded_seq_index + 1;
-        end
-    end
-    
-    if verbose_mode
-        clc;
-        disp('Dictionary generation progress: 100%');
-        disp('Compression data progress: 100%');
-        disp('Coding complete!');
-        disp('Expanding dictionary progress: 100%');
-        fprintf('Decoding data progress: %d%%', round(dictionary_row_index * 100 / dict_length));
-    end
-end
-
-decoded_sequence = uint8(decoded_sequence);
-
-if verbose_mode
-    clc;
-    disp('Dictionary generation progress: 100%');
-    disp('Compression data progress: 100%');
-    disp('Coding complete!');
-    disp('Expanding dictionary progress: 100%');
-    disp('Decoding data progress: 100%');
-    disp('Decoding complete!');
-end
-
-if generate_files
-    %% Store the decoded file
-    dec_file_ID = fopen(file_name_output, 'w');
-    fprintf(dec_file_ID, char(decoded_sequence));
-    fclose(dec_file_ID);
-end
-
-%% Error check
-
-if verbose_mode
-    disp('Error check started...');
-end
-
-err_counter = 0;
-error_locations = [];
-for i = 1 : msg_length
-    if seq(i) ~= decoded_sequence(i)
-        err_counter = err_counter + 1;
-        error_locations = [error_locations, i];
-    end
-end
-
-if err_counter > 0
-    fprintf('%d errors found! \n', err_counter);
-else
-    disp('No errors found!');
-end
-
-% error_locations
+% 
+% % Extract information about the sizes
+% symbol_size = double(coded_dictionary(1));
+% offset_size = double(coded_dictionary(2));
+% length_size = double(coded_dictionary(3));
+% coded_dictionary = coded_dictionary(4 : end);
+% 
+% % Bring the dictionary in bit form
+% bit_coded_dictionary = [];
+% while ~isempty(coded_dictionary)
+%     piece = coded_dictionary(1);
+%     coded_dictionary = coded_dictionary(2 : end);
+%     curr_bits = de2bi(piece);
+%     curr_bits = [curr_bits, zeros(1, 8 - length(curr_bits))];
+%     bit_coded_dictionary = [bit_coded_dictionary, curr_bits];
+% end
+% bit_coded_dictionary = double(bit_coded_dictionary);
+% 
+% decoded_dictionary = [];
+% dictionary_row_index = 1;
+% 
+% while length(bit_coded_dictionary) > min([symbol_size, offset_size, length_size])
+%     
+%     if bit_coded_dictionary(1) == 0   % decode a symbol
+%         bit_coded_dictionary = bit_coded_dictionary(2 : end);
+%         symbol_bits = bit_coded_dictionary(1 : symbol_size);
+%         curr_sym = bi2de(symbol_bits);
+%         bit_coded_dictionary = bit_coded_dictionary(symbol_size + 1 : end);
+%         decoded_dictionary(dictionary_row_index, :) = [0, 0, curr_sym];
+%         dictionary_row_index = dictionary_row_index + 1;
+%     else    % decode a pair
+%         bit_coded_dictionary = bit_coded_dictionary(2 : end);
+%         offset_bits = bit_coded_dictionary(1 : offset_size);
+%         curr_off = bi2de(offset_bits);
+%         bit_coded_dictionary = bit_coded_dictionary(offset_size + 1 : end);
+%         
+%         length_bits = bit_coded_dictionary(1 : length_size);
+%         curr_len = bi2de(length_bits);
+%         bit_coded_dictionary = bit_coded_dictionary(length_size + 1 : end);
+%         
+%         decoded_dictionary(dictionary_row_index, :) = [1, curr_off, curr_len];
+%         dictionary_row_index = dictionary_row_index + 1;
+%     end
+%     
+%     if verbose_mode
+%         clc;
+%         disp('Dictionary generation progress: 100%');
+%         disp('Compression data progress: 100%');
+%         disp('Coding complete!');
+%         fprintf('Expanding dictionary progress: %d%%', round((coded_dictionary_length -length(coded_dictionary)) * 100 / coded_dictionary_length));
+%     end
+% end
+% 
+% %% Check whether the dictionaries are equal
+% if ~isequal(dictionary, decoded_dictionary)
+%     disp('Error! Dictionaries not equal!');
+% end
+% 
+% %% Decoder
+% dict_length = size(decoded_dictionary, 1);
+% 
+% decoded_sequence = -1;
+% decoded_seq_index = 1;  % first EMPTY position
+% 
+% for dictionary_row_index = 1 : dict_length
+%     
+%     dictionary_row = decoded_dictionary(dictionary_row_index, :);
+%     
+%     info_index = dictionary_row(1);
+%     
+%     if info_index == 0
+%         last_symbol = dictionary_row(3);
+%         decoded_sequence(decoded_seq_index) = last_symbol;
+%         decoded_seq_index = decoded_seq_index + 1;
+%     else
+%         offset = dictionary_row(2);
+%         prefix_length = dictionary_row(3);
+%         prefix_from = decoded_seq_index - offset;
+%         
+%         for prefix_symbol = 1 : prefix_length
+%             decoded_sequence(decoded_seq_index) = decoded_sequence(prefix_from + prefix_symbol - 1);
+%             decoded_seq_index = decoded_seq_index + 1;
+%         end
+%     end
+%     
+%     if verbose_mode
+%         clc;
+%         disp('Dictionary generation progress: 100%');
+%         disp('Compression data progress: 100%');
+%         disp('Coding complete!');
+%         disp('Expanding dictionary progress: 100%');
+%         fprintf('Decoding data progress: %d%%', round(dictionary_row_index * 100 / dict_length));
+%     end
+% end
+% 
+% decoded_sequence = uint8(decoded_sequence);
+% 
+% if verbose_mode
+%     clc;
+%     disp('Dictionary generation progress: 100%');
+%     disp('Compression data progress: 100%');
+%     disp('Coding complete!');
+%     disp('Expanding dictionary progress: 100%');
+%     disp('Decoding data progress: 100%');
+%     disp('Decoding complete!');
+% end
+% 
+% if generate_files
+%     %% Store the decoded file
+%     dec_file_ID = fopen(file_name_output, 'w');
+%     fprintf(dec_file_ID, char(decoded_sequence));
+%     fclose(dec_file_ID);
+% end
+% 
+% %% Error check
+% 
+% if verbose_mode
+%     disp('Error check started...');
+% end
+% 
+% err_counter = 0;
+% error_locations = [];
+% for i = 1 : msg_length
+%     if seq(i) ~= decoded_sequence(i)
+%         err_counter = err_counter + 1;
+%         error_locations = [error_locations, i];
+%     end
+% end
+% 
+% if err_counter > 0
+%     fprintf('%d errors found! \n', err_counter);
+% else
+%     disp('No errors found!');
+% end
+% 
+% % error_locations
 
 %% Performances analysis
 comp_msg_size = length(cod_sequence)

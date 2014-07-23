@@ -114,9 +114,9 @@ Code files as \texttt{web.html} and \texttt{code.c} presents a greater redundanc
 \multicolumn{3}{c|}{\texttt{code.c}} \\
 \hline
 $L_s$ & LZ77 & LZSS \\ \hline
-1000 & $73.53$\% & $59.73$\% \\
-5000& $62.25$\% & $71.35$\% \\
-10000& $58.68$\% & $76.14$\% \\
+1000 & $73.53$\% & $59.72$\% \\
+5000& $62.25$\% & $52.98$\% \\
+10000& $58.68$\% & $50.14$\% \\
 \hline
 \end{tabular}
 
@@ -127,8 +127,8 @@ $L_s$ & LZ77 & LZSS \\ \hline
 \hline
 $L_s$ & LZ77 & LZSS \\ \hline
 1000 & $59.82$\% & $49.27$\% \\
-5000& $51.65$\% & $57.49$\% \\
-10000& $51.45$\% & $60.19$\% \\
+5000& $51.65$\% & $43.02$\% \\
+10000& $51.45$\% & $42.93$\% \\
 \hline
 \end{tabular}
 \end{center}
@@ -140,41 +140,45 @@ The executable file \texttt{sum} can also be quite well compressed:
 \hline
 $L_s$ & LZ77 & LZSS \\ \hline
 1000 & $68.91$\% & $60.58$\% \\
-5000& $61.85$\% & $68.69$\% \\
-10000& $55.83$\% & $71.34$\% \\
+5000& $61.85$\% & $56.70$\% \\
+10000& $55.83$\% & $51.61$\% \\
 \hline
 \end{tabular}
 \end{center}
 
-From the last three tables it could seem that the LZ77 improves with the increasing of the length $L_s$, while the LZSS does the opposite. Actually things are a bit more complicated, as we can see by plotting a 3D graph of the compression ratio in function of both $L_s$ and $L_c$. We report here the plots for the files \texttt{shak.txt} and \texttt{code.c}, both for the LZ77 and LZSS. 
+To conclude this section it is interesting to plot a surface graph of the performances in function of both $L_s$ and $L_c$. We compressed files \texttt{shak.txt} and \texttt{code.c} changing both the \textit{searching window} and the \textit{coding window} from $L_s = L_c = 1000$ to the dimension of the files themselves, with step of $1000$. Note that, if the windows are larger than the file sizes, it makes no difference how large the buffers are, because the windows are shrunk to adapt to the actual length of the message.
+
+We decided to draw it only for two files, ; 
 
 \begin{center}
 \begin{figure}[H]
-\includegraphics[width=8.5cm]{images/rep_surf.png}
+\includegraphics[width=8.5cm]{images/lz77_4.png}
 \caption{LZ77 compression ratio for \texttt{shak.txt}.}
 \end{figure}
 \end{center}
 
 \begin{center}
 \begin{figure}[H]
-\includegraphics[width=8.5cm]{images/rep_surf.png}
+\includegraphics[width=8.5cm]{images/lzss_4.png}
 \caption{LZSS compression ratio for \texttt{shak.txt}.}
 \end{figure}
 \end{center}
 
 \begin{center}
 \begin{figure}[H]
-\includegraphics[width=8.5cm]{images/rep_surf.png}
+\includegraphics[width=8.5cm]{images/lz77_6.png}
 \caption{LZ77 compression ratio for \texttt{code.c}.}
 \end{figure}
 \end{center}
 
 \begin{center}
 \begin{figure}[H]
-\includegraphics[width=8.5cm]{images/rep_surf.png}
+\includegraphics[width=8.5cm]{images/lzss_6.png}
 \caption{LZSS compression ratio for \texttt{code.c}.}
 \end{figure}
 \end{center}
+
+Two main things can be noticed from the above graphs. First of all we have a confirmation taht the LZSS works in general better than the LZ77, as a matter of fact plots related to the LZSS lie below the corresponding LZ77 plots. The second, and most relevant information, links the window sizes with with the compression performances: we can see that a short \textit{coding window} is more advisable than a large one, while large \textit{searching windows} improve the compression ratio by a considerable factor. It is intuitive that large \textit{searching windows} are better, because, if we consider a long sequence of symbols, it is more likely that some patterns are repeated; on the other hand, increasing the \textit{coding window} does not improve...............................????????????????????????????????????????????????????????
 
 %It is easy to see that performances tends to improve with the growing of the \textit{searching window}. We could expect such a result: with shorter windows it is more difficult to find repeated pattern to refer to and, in some cases, we could neither realize that such patterns are present in the message. For a highly redundant input stream a long window allows to encode at the same time much more repetitions; even though the number of bits needed to represent a wide range of values grows with the increasing of the window, this happens with a logarithmic trend, while the amount of space used to encode a sequence byte per byte grows linearly. Clearly the usage of large windows implies a drop of performances from a computational time point of view. 
 %In the best compression scenario, we would like to have a \textit{search window} as long as the message itself, but, since this is not suitable for time reason, commercial softwares usually work with block of symbols $32$ Kbyte long with windows of

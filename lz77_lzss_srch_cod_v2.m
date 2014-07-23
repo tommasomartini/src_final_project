@@ -21,7 +21,7 @@ windows_start = 1000;
 
 M = 256;  % alphabet cardinality
 
-file_numbers = [6];
+file_numbers = [4];
 
 optimistic_files = [1];
 
@@ -58,8 +58,10 @@ for file_num = file_numbers
     search_windows_span = windows_start : windows_step : max_win_span;
     coding_windows_span = windows_start : windows_step : max_win_span;
     
-%     search_windows_span = [1000, 5000, 10000];
-%     coding_windows_span = [1000, 2000, 3000];
+        search_windows_span = [1000, 5000, 10000];
+%                 search_windows_span = 10000;
+        coding_windows_span = 2000;
+    %     coding_windows_span = [1000, 2000, 3000];
     
     lz77_performances = zeros(length(search_windows_span), length(coding_windows_span));
     lzss_performances = zeros(length(search_windows_span), length(coding_windows_span));
@@ -71,7 +73,7 @@ for file_num = file_numbers
             search_window_length = search_windows_span(search_win_index);
             coding_window_length = coding_windows_span(coding_win_index);
             
-%             fprintf('File: %d, srch: %d, cod: %d \n', file_num, search_window_length, coding_window_length);
+            %             fprintf('File: %d, srch: %d, cod: %d \n', file_num, search_window_length, coding_window_length);
             
             offset_size = ceil(log2(search_window_length));
             length_size = ceil(log2(coding_window_length));
@@ -231,6 +233,7 @@ for file_num = file_numbers
             symbol_thr = ceil(pair / single);  % minimum number of symbol I can encode as a pair. If the match length is shorter than symbol_thr I encode them as single symbols
             
             dict_index = 2; % index to span the dictionary
+            lzss_dictionary = [];
             lzss_dictionary(1, :) = [0, 0, double(seq(1))];  % first triple
             
             search_index = 1;   % first element of the search window
@@ -357,20 +360,11 @@ for file_num = file_numbers
             bit_cod_sequence = [];
             for dict_row = 1 : size(lzss_dictionary, 1)
                 
-                if mod(dict_row - 1, 8) == 0    % every 8 dict rows I have to insert a byte with flags
-                    indeces_octave = lzss_dictionary(dict_row : min(dict_row + 8 - 1, size(lzss_dictionary, 1)), 1);
-                    indeces_octave = indeces_octave';
-                    if size(lzss_dictionary, 1) - dict_row + 1 < 8   % if I'm left with less than 8 rows...
-                        indeces_octave = [indeces_octave, zeros(1, 8 - (size(lzss_dictionary, 1) - dict_row + 1))]; % put zeros as last flags
-                    end
-                    bit_cod_sequence = [bit_cod_sequence, indeces_octave];
-                end
-                
                 if lzss_dictionary(dict_row, 1) == 0     % encode a symbol
                     curr_sym = lzss_dictionary(dict_row, 3);
                     curr_sym_bit = de2bi(curr_sym);
                     curr_sym_bit = [curr_sym_bit, zeros(1, symbol_size - length(curr_sym_bit))];
-                    bit_cod_sequence = [bit_cod_sequence, curr_sym_bit];
+                    bit_cod_sequence = [bit_cod_sequence, 0, curr_sym_bit];
                 else    % encode a pair
                     curr_off = lzss_dictionary(dict_row, 2);
                     curr_off_bit = de2bi(curr_off);
@@ -379,7 +373,7 @@ for file_num = file_numbers
                     curr_len = lzss_dictionary(dict_row, 3);
                     curr_len_bit = de2bi(curr_len);
                     curr_len_bit = [curr_len_bit, zeros(1, length_size - length(curr_len_bit))];
-                    bit_cod_sequence = [bit_cod_sequence, curr_off_bit, curr_len_bit];
+                    bit_cod_sequence = [bit_cod_sequence, 1, curr_off_bit, curr_len_bit];
                 end
             end
             
@@ -397,13 +391,13 @@ for file_num = file_numbers
             
             % Embedding information about the size in bits of offset and length: 3
             % bytes
-            symbol_size_byte = uint8(symbol_size);
-            offset_size_byte = uint8(offset_size);
-            length_size_byte = uint8(length_size);
-            lzss_cod_sequence = [symbol_size_byte, offset_size_byte, length_size_byte, lzss_cod_sequence];
+%             symbol_size_byte = uint8(symbol_size);
+%             offset_size_byte = uint8(offset_size);
+%             length_size_byte = uint8(length_size);
+%             lzss_cod_sequence = [symbol_size_byte, offset_size_byte, length_size_byte, lzss_cod_sequence];
             
             %% LZSS Performances analysis
-            comp_msg_size = length(lzss_cod_sequence);
+            comp_msg_size = length(lzss_cod_sequence) + 3;
             lzss_compression_ratio = comp_msg_size * 100 / msg_length;
             lzss_performances(search_win_index, coding_win_index) = lzss_compression_ratio;
         end

@@ -21,12 +21,13 @@ verbose_mode = false;
 generate_files = false;
 
 % Algorithm parameters
-search_window_length = 5000;
+search_window_length = 1000;
 coding_window_length = 2000;
 
 % Implementation parameters
 file_name_input = './cantrbry/alice29.txt';
-file_name_input = './big_files/1';
+file_name_input = './big_files/4';
+% file_name_input = './media_files/lena.bmp';
 % file_name_input = 'sam.txt';
 dictionary_output = 'lzss_dictionary_output_2.txt';
 file_name_output = 'lzss_output_2.txt';
@@ -332,8 +333,7 @@ end
 
 %% Performances analysis
 comp_msg_size = length(cod_sequence)
-original_msg_size = msg_length
-compression_ratio = comp_msg_size * 100 / original_msg_size
+compression_ratio = comp_msg_size * 100 / msg_length
 if verbose_mode
     fprintf('Compression: %d %%', compression_ratio);
 end

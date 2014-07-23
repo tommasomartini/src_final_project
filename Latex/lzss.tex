@@ -1,9 +1,9 @@
 \section{The LZSS Algorithm}
 The LZ77 algorithm has a lack of performances due to the constraint on the triplet size: whenever we encode a single symbol, we waste $l_{offset} + l_{length}$ bits because the \textit{offset} and the \textit{length} of the match are both zero, in fact the triplet to send is $[0, 0, \alpha]$. In 1982 Storer and Szymanski \cite{storer1} proposed a different version of the LZ77 algorithm which improves the compression performances through a better management of the size of the dictionary entries.
 
-We can distinguish two kinds of entries: those which contain the information related to an only symbol not find in the \textit{search window} and those which refer to a previous pattern. We can use a flag bit to indicate in which case we are. If the bit is $0$ the entry is made only by the code of a symbol. If the bit is $1$ the entry is made of a pair (\textit{offset}, \textit{length}). This convention allows us to save a lot of space in both cases.
+We can distinguish two kinds of entries: those which contain the information related to an only symbol not find in the \textit{searching window} and those which refer to a previous pattern. We can use a flag bit to indicate in which case we are. If the bit is $0$ the entry is made only by the code of a symbol. If the bit is $1$ the entry is made of a pair (\textit{offset}, \textit{length}). This convention allows us to save a lot of space in both cases.
 
-The encoding of a single symbol implies the employment of $9$ bits: $8$ for the symbol itself and one for the $0$ flag. The encoding of a pair, instead, takes $l_{offset} + l_{length} + 1$ bits. It is clear that, sometimes, it could be more convenient to encode some symbols independently even if a match has been found, if the match length is shorter than:
+The encoding of a single symbol implies the employment of $9$ bits: $8$ for the symbol itself and one for the $0$ flag. The encoding of a pair, instead, takes $l_{offset} + l_{length} + 1$ bits. It is clear that it could be more convenient to encode some symbols independently even if a match has been found, if the match length is shorter than:
 \begin{equation}
 k = \left \lceil \frac{l_{offset} + l_{length} + 1}{9} \right \rceil
 \end{equation}
@@ -11,4 +11,4 @@ k = \left \lceil \frac{l_{offset} + l_{length} + 1}{9} \right \rceil
 \subsection{LZSS Implementation}
 The main difference with the LZ77 implementation lies on the dictionary construction, all the rest of the code is quite the same used in the implementation of the LZ77 exposed in section \ref{subsubsec:pess}, with a pessimistic usage of the function \texttt{strfind()} for pattern matching.
 
-Once again, to save memory, we first look at the dictionary as a stream of bits lining up its rows, then we write it as a sequence of bytes and, eventually, we attach in front of it three bytes expressing the number of bits employes to encode the fields \textit{offset}, \textit{length} and \textit{symbol}.
+Once again, to save memory, we first look at the dictionary as a stream of bits lining up its rows, then we write it as a sequence of bytes and, eventually, we attach in front of it three bytes expressing the number of bits employed to encode the fields \textit{offset}, \textit{length} and \textit{symbol}.

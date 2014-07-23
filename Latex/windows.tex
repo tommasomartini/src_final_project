@@ -27,7 +27,7 @@ All the experiments we performed have been executed on seven specific types of f
 \textbf{\texttt{sum}}: SPARC executable file ($38240$ bytes).
 \end{itemize}
 
-We chose these files to have a wide span among different kinds of files and show, in this way, the several behaviours the algorithm can assume for different scenarios. In particular, we use the file \texttt{rep.txt} to obtain the maximum compression capability of the algorithm, the file \texttt{per} was included to show the behaviours in presence of periodicity and the file \texttt{ran} represents the worst scenario for compression purposes, since it has no redundancy to exploit and a high entropy. The last four files, on the other hand, do not represent borderline or special cases, but more common examples of files one can deals with during his ordinary life. in the next sections we will see how the algorithms behave working with each of these files.
+We chose these files to have a wide span among different kinds of files and show, in this way, the several behaviours the algorithm can assume for different scenarios. In particular, we use the file \texttt{rep.txt} to obtain the maximum compression capability of the algorithm, the file \texttt{per} was included to show the behaviours in presence of periodicity and the file \texttt{ran} represents the worst scenario for compression purposes, since it has no redundancy to exploit and a high entropy. The last four files, on the other hand, do not represent borderline or special cases, but more common examples of files one can deal with during his ordinary life.
 
 \subsection{Redundant file}
 The first file, \texttt{rep.txt}, is the most redundant file we can have: $10000$ repetitions of the same character, \texttt{A}. The nature of the file allows a very strong compression, since we could just say what is the symbol and how many times it is repeated. The following table shows the performances of the algorithms executed with a fixed \textit{coding window} of length $2000$ and a \textit{searching window} varying between $1000$, $5000$ and $10000$, which is the length of the message itself:
@@ -63,8 +63,10 @@ It is interesting to report here the 3D plot of the LZ77 performances, in percen
 \end{figure}
 \end{center}
 
+The above plot well shows that for this file the choice of the \textit{coding window} is more important than the choice of the \textit{searching window}, which, we will see, is not common for a generic file.
+
 \subsection{Periodic file}
-A big problem with implicit dictionary based compression algorithms is that periodicity of the message could not be properly exploited. This unfavorable event occurs if the windows are shorter than the period of the message, such that there is no way the algorithm can become aware of the existance of periodicity in the message. We can bring a clear example compressing the file \texttt{per} keeping fixed the \textit{coding window} to $2000$, but with two different \textit{searching window} lengths: $500$ (half a period) and $5000$ (five times a period). The compression results are reported in the following table:
+A big problem with implicit dictionary based compression algorithms is that periodicity of the message could not be properly exploited. This unfavorable event occurs if the windows are shorter than the period of the message, such that there is no way the algorithm can become aware of the existance of periodicity in the message; the LZ78 algorithm was born to solve this issue. We can bring a clear example compressing the file \texttt{per} keeping fixed the \textit{coding window} to $2000$, but with two different \textit{searching window} lengths: $500$ (half a period) and $5000$ (five times a period). The compression results are reported in the following table:
 
 \begin{center}
 \begin{tabular}{r | c | c |}
@@ -92,7 +94,7 @@ $L_s$ & LZ77 & LZSS \\ \hline
 \end{tabular}
 \end{center}
 
-We can notice two main facts: the first is that LZSS compresses in general better than LZ77; the second is that LZSS' performances decrease much more slowly than LZ77's; if we inspect the dictionaries created by the two algorithms, we can try to spot the reason of such difference: the LZ77 dictionary contains a lot of references to an only previous symbol and we cannot avoid using a whole triplet to encode them. On the other hand the LZSS algorithm is able to realize that it is not a good deal to waste a whole triplet to express an only symbol and it encodes it as a single byte. In this way we ideally would have a dictionary with the same dimensions of the message, but, unlucklily, the coding algorithm also includes the flag bits. Thus, it is practically quite impossible to compress a random sequence: if we try to compress it, we are going to hopelessly expand it.
+We can notice two main facts: the first is that LZSS compresses in general better than LZ77; the second is that LZSS performances decrease much more slowly than LZ77; if we inspect the dictionaries created by the two algorithms, we can try to spot the reason of such difference: the LZ77 dictionary contains a lot of references to an only previous symbol and we cannot avoid using a whole triplet to encode them. On the other hand the LZSS algorithm is able to realize that it is not a good deal to waste a whole triplet to express an only symbol and it encodes it as a single byte. In this way we ideally would have a dictionary with the same dimensions of the message, but, unlucklily, the coding algorithm also includes the flag bits. Thus, it is practically quite impossible to compress a random sequence: if we try to compress it, we are going to hopelessly expand it.
 
 \subsection{Common files}
 The file \texttt{shak.txt} is an example of human-written text file. As we can see from the results of the experiment, LZ77 and LZSS are not the best choice for compressing this kind of file. The reason is that the spoken language has not a strong redundancy and patterns of characters are often short and repeated only a few times. The table below shows the performances with $L_c = 2000$:
@@ -147,8 +149,6 @@ $L_s$ & LZ77 & LZSS \\ \hline
 \end{center}
 
 To conclude this section it is interesting to plot a surface graph of the performances in function of both $L_s$ and $L_c$. We compressed files \texttt{shak.txt} and \texttt{code.c} changing both the \textit{searching window} and the \textit{coding window} from $L_s = L_c = 1000$ to the dimension of the files themselves, with step of $1000$. Note that, if the windows are larger than the file sizes, it makes no difference how large the buffers are, because the windows are shrunk to adapt to the actual length of the message.
-
-We decided to draw it only for two files, ; 
 
 \begin{center}
 \begin{figure}[H]

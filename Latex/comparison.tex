@@ -25,6 +25,21 @@ compressed representation of the LZ77 dictionary;
 byte $256$ to indicate the end of the block.
 \end{itemize}
 
-Combining several steps of compressions it is possible to reach very good performance, also in cases where simple LZ77 or LZSS are not very effective.
+\subsection{Comparison with \texttt{zip} and \texttt{gzip}}
 
+Combining several steps of compressions it is possible to reach very good performances, also in cases where simple LZ77 or LZSS are not very effective. In the following bar graphs we compare, for each of the seven test files, the compression performances of our implementation of the LZ77 and LZSS algorithms and the Unix versions of the programs \texttt{zip} and \texttt{gzip}:
+
+\begin{center}
+\begin{figure}[H]
+\includegraphics[width=10cm]{images/bars1.png}
+\caption{Highly redundant files.}
+\end{figure}
+\end{center}
+
+\begin{center}
+\begin{figure}[H]
+\includegraphics[width=10cm]{images/bars2.png}
+\caption{Common files.}
+\end{figure}
+\end{center}
 

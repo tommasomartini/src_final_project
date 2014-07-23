@@ -5,6 +5,11 @@ J.H.~MORRIS D.~KNUTH and V.~PRATT.
 \newblock Fast pattern matching in strings.
 \newblock {\em SIAM Journal on Computing}, 1977.
 
+\bibitem{deut1}
+P.~DEUTSCH.
+\newblock Rfc1951, deflate compressed data format specification version 1.3,
+  1996.
+
 \bibitem{storer1}
 J.A. STORER and T.G. SZYMANSKI.
 \newblock Data compression via textual substitution.
